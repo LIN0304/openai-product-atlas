@@ -1,0 +1,196 @@
+{
+  "schema_version": "openai-product-timeline-source-registry.v0.1",
+  "lane": "platform-lifecycle",
+  "retrieved_at": "2026-07-13",
+  "source_policy": "official OpenAI sources only",
+  "source_count": 11,
+  "sources": [
+    {
+      "source_id": "platform-src-001",
+      "source_name": "OpenAI API Changelog",
+      "source_url": "https://developers.openai.com/api/docs/changelog",
+      "publisher": "OpenAI",
+      "source_kind": "official_changelog",
+      "time_coverage": {
+        "from": "2023-10-06",
+        "to": "2026-07-09"
+      },
+      "extraction_status": "complete",
+      "event_granularity": "every dated changelog card",
+      "known_gaps": [
+        "The current page begins in October 2023; earlier API events require launch posts."
+      ]
+    },
+    {
+      "source_id": "platform-src-002",
+      "source_name": "OpenAI API Deprecations",
+      "source_url": "https://developers.openai.com/api/docs/deprecations",
+      "publisher": "OpenAI",
+      "source_kind": "official_deprecation_registry",
+      "time_coverage": {
+        "from": "2022-06-03",
+        "to": "2026-06-11"
+      },
+      "extraction_status": "complete_in_scope",
+      "event_granularity": "every dated deprecation heading in scope",
+      "known_gaps": [
+        "Rows bundle multiple model shutdowns under one announcement event.",
+        "Living registry may revise replacement recommendations."
+      ]
+    },
+    {
+      "source_id": "platform-src-003",
+      "source_name": "Codex Changelog",
+      "source_url": "https://developers.openai.com/codex/changelog/",
+      "publisher": "OpenAI",
+      "source_kind": "official_changelog",
+      "time_coverage": {
+        "from": "2025-05-19",
+        "to": "2026-07-09"
+      },
+      "extraction_status": "complete",
+      "event_granularity": "every release card",
+      "known_gaps": [
+        "Some cards contain many fixes in one release event.",
+        "GitHub package/CLI releases not separately atomized when absent from this page."
+      ]
+    },
+    {
+      "source_id": "platform-src-004",
+      "source_name": "Apps SDK Changelog",
+      "source_url": "https://developers.openai.com/apps-sdk/changelog/",
+      "publisher": "OpenAI",
+      "source_kind": "official_changelog",
+      "time_coverage": {
+        "from": "2025-11-04",
+        "to": "2026-06-12"
+      },
+      "extraction_status": "complete",
+      "event_granularity": "every release card",
+      "known_gaps": [
+        "Pre-launch prototype changes are not represented."
+      ]
+    },
+    {
+      "source_id": "platform-src-005",
+      "source_name": "ChatGPT macOS app release notes",
+      "source_url": "https://help.openai.com/en/articles/9703738-desktop-app-release-notes",
+      "publisher": "OpenAI",
+      "source_kind": "official_changelog",
+      "time_coverage": {
+        "from": "2024-08-06",
+        "to": "2026-07-09"
+      },
+      "extraction_status": "parsed_landmarks",
+      "event_granularity": "dated release-note groups",
+      "known_gaps": [
+        "Patch-only details are summarized rather than emitted as separate nodes.",
+        "The page has sparse entries after March 2025 because the product surface changed."
+      ]
+    },
+    {
+      "source_id": "platform-src-006",
+      "source_name": "Windows App - Release Notes",
+      "source_url": "https://help.openai.com/en/articles/10003026-windows-app-release-notes",
+      "publisher": "OpenAI",
+      "source_kind": "official_changelog",
+      "time_coverage": {
+        "from": "2024-10-17",
+        "to": "2025-01-30"
+      },
+      "extraction_status": "parsed_landmarks",
+      "event_granularity": "dated release-note groups",
+      "known_gaps": [
+        "The legacy page stops in January 2025; later desktop changes appear in ChatGPT and Codex notes."
+      ]
+    },
+    {
+      "source_id": "platform-src-007",
+      "source_name": "ChatGPT Atlas - Release Notes",
+      "source_url": "https://help.openai.com/en/articles/12591856-chatgpt-atlas-release-notes",
+      "publisher": "OpenAI",
+      "source_kind": "official_changelog",
+      "time_coverage": {
+        "from": "2025-10-21",
+        "to": "2026-03-10"
+      },
+      "extraction_status": "complete_by_release_date",
+      "event_granularity": "every build/date group",
+      "known_gaps": [
+        "No build notes are listed between March 10 and the July 9 deprecation announcement."
+      ]
+    },
+    {
+      "source_id": "platform-src-008",
+      "source_name": "ChatGPT Enterprise & Edu - Release Notes",
+      "source_url": "https://help.openai.com/en/articles/10128477-chatgpt-enterprise-edu-release-notes",
+      "publisher": "OpenAI",
+      "source_kind": "official_changelog",
+      "time_coverage": {
+        "from": "2024-12-12",
+        "to": "2026-06-18"
+      },
+      "extraction_status": "partial_landmarks",
+      "event_granularity": "selected material admin, Codex, app and lifecycle sections",
+      "known_gaps": [
+        "The living page has many connector/model parity entries that overlap the main ChatGPT release notes.",
+        "Not every low-level admin or connector change is atomized in this lane."
+      ]
+    },
+    {
+      "source_id": "platform-src-009",
+      "source_name": "ChatGPT Business - Release Notes",
+      "source_url": "https://help.openai.com/en/articles/11391654-chatgpt-business-release-notes",
+      "publisher": "OpenAI",
+      "source_kind": "official_changelog",
+      "time_coverage": {
+        "from": "2025-06-04",
+        "to": "2026-07-06"
+      },
+      "extraction_status": "partial_landmarks",
+      "event_granularity": "selected plan, admin, Apps SDK and availability milestones",
+      "known_gaps": [
+        "Many feature-parity entries duplicate consumer or Enterprise notes and are left to the corresponding lanes."
+      ]
+    },
+    {
+      "source_id": "platform-src-010",
+      "source_name": "OpenAI official product launch posts",
+      "source_url": "https://openai.com/news/product/",
+      "publisher": "OpenAI",
+      "source_kind": "official_launch_posts",
+      "time_coverage": {
+        "from": "2023-03-01",
+        "to": "2026-07-09"
+      },
+      "extraction_status": "targeted",
+      "event_granularity": "selected launches needed to fill changelog gaps",
+      "known_gaps": [
+        "This is not a complete extraction of every OpenAI blog post; only platform/client/business/safety launches in scope were included."
+      ]
+    },
+    {
+      "source_id": "platform-src-011",
+      "source_name": "OpenAI Security",
+      "source_url": "https://openai.com/news/security/",
+      "publisher": "OpenAI",
+      "source_kind": "official_security_index",
+      "time_coverage": {
+        "from": "2024-09-16",
+        "to": "2026-06-22"
+      },
+      "extraction_status": "targeted_major_events",
+      "event_granularity": "major public security products and governance changes",
+      "known_gaps": [
+        "Research-only security posts and incident responses are excluded unless they changed a public product, framework, or lifecycle."
+      ]
+    }
+  ],
+  "global_gaps": [
+    "No single official page contains every OpenAI release across products.",
+    "Living changelogs may be rewritten, renamed, consolidated or pruned after publication.",
+    "The API changelog currently starts in October 2023, so earlier API milestones are reconstructed from official launch posts and the deprecation registry.",
+    "Enterprise/Business notes overlap with the consumer ChatGPT notes; this lane records material administrative and lifecycle changes but not every duplicated feature-parity notice.",
+    "Some shutdown dates occur after the research cutoff; those nodes record the announcement date and lifecycle state rather than falsely marking the product already retired."
+  ]
+}

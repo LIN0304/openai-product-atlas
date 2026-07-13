@@ -1,0 +1,16 @@
+.env*
+.playwright-cli/
+.vinext/
+.wrangler/
+coverage/
+dist/
+godot/
+output/
+outputs/
+playwright-report/
+research/
+scripts/
+test-results/
+tests/
+work/
+*.tsbuildinfo

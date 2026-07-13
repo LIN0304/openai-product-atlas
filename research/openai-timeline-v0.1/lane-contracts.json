@@ -1,0 +1,418 @@
+{
+  "schema_version": "lane-contracts.v1",
+  "run_id": "research-7cfd912b-77cc-474b-a875-58889e0c8faa",
+  "parallel_groups": [
+    {
+      "id": "parallel-research-fanout",
+      "lane_ids": [
+        "lane-scope-mapper",
+        "lane-openai-deep-research-scout",
+        "lane-claude-research-scout",
+        "lane-gemini-deep-research-scout",
+        "lane-argument-miner",
+        "lane-evidence-ledger-verifier",
+        "lane-corpus-builder",
+        "lane-harness-engineering-runtime",
+        "lane-governance-policy-scout",
+        "lane-cost-latency-benchmark",
+        "lane-arxiv-paper-scout",
+        "lane-contradiction-hunter",
+        "lane-example-fixture-curator"
+      ]
+    }
+  ],
+  "lanes": [
+    {
+      "lane_id": "lane-scope-mapper",
+      "parallelizable_subproblem_id": "subproblem-scope-mapper",
+      "independent_resource_claim": {
+        "resources": [
+          "subagent-briefs/scope-mapper.md",
+          "drafts/scope-mapper.md"
+        ],
+        "isolation_boundary": "Reads lane inputs and writes only its own brief/draft before synthesis."
+      },
+      "cross_lane_dependencies": [],
+      "merge_contract": {
+        "owner": "scope-mapper",
+        "inputs": [
+          "context-pack.md",
+          "research-plan.md"
+        ],
+        "outputs": [
+          "drafts/scope-mapper.md"
+        ],
+        "acceptance_checks": [
+          "Material claims include source references",
+          "Contradictions and gaps remain explicit"
+        ]
+      },
+      "evidence_ref": "subagent-briefs/scope-mapper.md"
+    },
+    {
+      "lane_id": "lane-openai-deep-research-scout",
+      "parallelizable_subproblem_id": "subproblem-openai-deep-research-scout",
+      "independent_resource_claim": {
+        "resources": [
+          "subagent-briefs/openai-deep-research-scout.md",
+          "drafts/openai-deep-research-scout.md"
+        ],
+        "isolation_boundary": "Reads lane inputs and writes only its own brief/draft before synthesis."
+      },
+      "cross_lane_dependencies": [],
+      "merge_contract": {
+        "owner": "openai-deep-research-scout",
+        "inputs": [
+          "context-pack.md",
+          "research-plan.md"
+        ],
+        "outputs": [
+          "drafts/openai-deep-research-scout.md"
+        ],
+        "acceptance_checks": [
+          "Material claims include source references",
+          "Contradictions and gaps remain explicit"
+        ]
+      },
+      "evidence_ref": "subagent-briefs/openai-deep-research-scout.md"
+    },
+    {
+      "lane_id": "lane-claude-research-scout",
+      "parallelizable_subproblem_id": "subproblem-claude-research-scout",
+      "independent_resource_claim": {
+        "resources": [
+          "subagent-briefs/claude-research-scout.md",
+          "drafts/claude-research-scout.md"
+        ],
+        "isolation_boundary": "Reads lane inputs and writes only its own brief/draft before synthesis."
+      },
+      "cross_lane_dependencies": [],
+      "merge_contract": {
+        "owner": "claude-research-scout",
+        "inputs": [
+          "context-pack.md",
+          "research-plan.md"
+        ],
+        "outputs": [
+          "drafts/claude-research-scout.md"
+        ],
+        "acceptance_checks": [
+          "Material claims include source references",
+          "Contradictions and gaps remain explicit"
+        ]
+      },
+      "evidence_ref": "subagent-briefs/claude-research-scout.md"
+    },
+    {
+      "lane_id": "lane-gemini-deep-research-scout",
+      "parallelizable_subproblem_id": "subproblem-gemini-deep-research-scout",
+      "independent_resource_claim": {
+        "resources": [
+          "subagent-briefs/gemini-deep-research-scout.md",
+          "drafts/gemini-deep-research-scout.md"
+        ],
+        "isolation_boundary": "Reads lane inputs and writes only its own brief/draft before synthesis."
+      },
+      "cross_lane_dependencies": [],
+      "merge_contract": {
+        "owner": "gemini-deep-research-scout",
+        "inputs": [
+          "context-pack.md",
+          "research-plan.md"
+        ],
+        "outputs": [
+          "drafts/gemini-deep-research-scout.md"
+        ],
+        "acceptance_checks": [
+          "Material claims include source references",
+          "Contradictions and gaps remain explicit"
+        ]
+      },
+      "evidence_ref": "subagent-briefs/gemini-deep-research-scout.md"
+    },
+    {
+      "lane_id": "lane-argument-miner",
+      "parallelizable_subproblem_id": "subproblem-argument-miner",
+      "independent_resource_claim": {
+        "resources": [
+          "subagent-briefs/argument-miner.md",
+          "drafts/argument-miner.md"
+        ],
+        "isolation_boundary": "Reads lane inputs and writes only its own brief/draft before synthesis."
+      },
+      "cross_lane_dependencies": [],
+      "merge_contract": {
+        "owner": "argument-miner",
+        "inputs": [
+          "context-pack.md",
+          "research-plan.md"
+        ],
+        "outputs": [
+          "drafts/argument-miner.md"
+        ],
+        "acceptance_checks": [
+          "Material claims include source references",
+          "Contradictions and gaps remain explicit"
+        ]
+      },
+      "evidence_ref": "subagent-briefs/argument-miner.md"
+    },
+    {
+      "lane_id": "lane-evidence-ledger-verifier",
+      "parallelizable_subproblem_id": "subproblem-evidence-ledger-verifier",
+      "independent_resource_claim": {
+        "resources": [
+          "subagent-briefs/evidence-ledger-verifier.md",
+          "drafts/evidence-ledger-verifier.md"
+        ],
+        "isolation_boundary": "Reads lane inputs and writes only its own brief/draft before synthesis."
+      },
+      "cross_lane_dependencies": [],
+      "merge_contract": {
+        "owner": "evidence-ledger-verifier",
+        "inputs": [
+          "context-pack.md",
+          "research-plan.md"
+        ],
+        "outputs": [
+          "drafts/evidence-ledger-verifier.md"
+        ],
+        "acceptance_checks": [
+          "Material claims include source references",
+          "Contradictions and gaps remain explicit"
+        ]
+      },
+      "evidence_ref": "subagent-briefs/evidence-ledger-verifier.md"
+    },
+    {
+      "lane_id": "lane-corpus-builder",
+      "parallelizable_subproblem_id": "subproblem-corpus-builder",
+      "independent_resource_claim": {
+        "resources": [
+          "subagent-briefs/corpus-builder.md",
+          "drafts/corpus-builder.md"
+        ],
+        "isolation_boundary": "Reads lane inputs and writes only its own brief/draft before synthesis."
+      },
+      "cross_lane_dependencies": [],
+      "merge_contract": {
+        "owner": "corpus-builder",
+        "inputs": [
+          "context-pack.md",
+          "research-plan.md"
+        ],
+        "outputs": [
+          "drafts/corpus-builder.md"
+        ],
+        "acceptance_checks": [
+          "Material claims include source references",
+          "Contradictions and gaps remain explicit"
+        ]
+      },
+      "evidence_ref": "subagent-briefs/corpus-builder.md"
+    },
+    {
+      "lane_id": "lane-harness-engineering-runtime",
+      "parallelizable_subproblem_id": "subproblem-harness-engineering-runtime",
+      "independent_resource_claim": {
+        "resources": [
+          "subagent-briefs/harness-engineering-runtime.md",
+          "drafts/harness-engineering-runtime.md"
+        ],
+        "isolation_boundary": "Reads lane inputs and writes only its own brief/draft before synthesis."
+      },
+      "cross_lane_dependencies": [],
+      "merge_contract": {
+        "owner": "harness-engineering-runtime",
+        "inputs": [
+          "context-pack.md",
+          "research-plan.md"
+        ],
+        "outputs": [
+          "drafts/harness-engineering-runtime.md"
+        ],
+        "acceptance_checks": [
+          "Material claims include source references",
+          "Contradictions and gaps remain explicit"
+        ]
+      },
+      "evidence_ref": "subagent-briefs/harness-engineering-runtime.md"
+    },
+    {
+      "lane_id": "lane-governance-policy-scout",
+      "parallelizable_subproblem_id": "subproblem-governance-policy-scout",
+      "independent_resource_claim": {
+        "resources": [
+          "subagent-briefs/governance-policy-scout.md",
+          "drafts/governance-policy-scout.md"
+        ],
+        "isolation_boundary": "Reads lane inputs and writes only its own brief/draft before synthesis."
+      },
+      "cross_lane_dependencies": [],
+      "merge_contract": {
+        "owner": "governance-policy-scout",
+        "inputs": [
+          "context-pack.md",
+          "research-plan.md"
+        ],
+        "outputs": [
+          "drafts/governance-policy-scout.md"
+        ],
+        "acceptance_checks": [
+          "Material claims include source references",
+          "Contradictions and gaps remain explicit"
+        ]
+      },
+      "evidence_ref": "subagent-briefs/governance-policy-scout.md"
+    },
+    {
+      "lane_id": "lane-cost-latency-benchmark",
+      "parallelizable_subproblem_id": "subproblem-cost-latency-benchmark",
+      "independent_resource_claim": {
+        "resources": [
+          "subagent-briefs/cost-latency-benchmark.md",
+          "drafts/cost-latency-benchmark.md"
+        ],
+        "isolation_boundary": "Reads lane inputs and writes only its own brief/draft before synthesis."
+      },
+      "cross_lane_dependencies": [],
+      "merge_contract": {
+        "owner": "cost-latency-benchmark",
+        "inputs": [
+          "context-pack.md",
+          "research-plan.md"
+        ],
+        "outputs": [
+          "drafts/cost-latency-benchmark.md"
+        ],
+        "acceptance_checks": [
+          "Material claims include source references",
+          "Contradictions and gaps remain explicit"
+        ]
+      },
+      "evidence_ref": "subagent-briefs/cost-latency-benchmark.md"
+    },
+    {
+      "lane_id": "lane-arxiv-paper-scout",
+      "parallelizable_subproblem_id": "subproblem-arxiv-paper-scout",
+      "independent_resource_claim": {
+        "resources": [
+          "subagent-briefs/arxiv-paper-scout.md",
+          "drafts/arxiv-paper-scout.md"
+        ],
+        "isolation_boundary": "Reads lane inputs and writes only its own brief/draft before synthesis."
+      },
+      "cross_lane_dependencies": [],
+      "merge_contract": {
+        "owner": "arxiv-paper-scout",
+        "inputs": [
+          "context-pack.md",
+          "research-plan.md"
+        ],
+        "outputs": [
+          "drafts/arxiv-paper-scout.md"
+        ],
+        "acceptance_checks": [
+          "Material claims include source references",
+          "Contradictions and gaps remain explicit"
+        ]
+      },
+      "evidence_ref": "subagent-briefs/arxiv-paper-scout.md"
+    },
+    {
+      "lane_id": "lane-contradiction-hunter",
+      "parallelizable_subproblem_id": "subproblem-contradiction-hunter",
+      "independent_resource_claim": {
+        "resources": [
+          "subagent-briefs/contradiction-hunter.md",
+          "drafts/contradiction-hunter.md"
+        ],
+        "isolation_boundary": "Reads lane inputs and writes only its own brief/draft before synthesis."
+      },
+      "cross_lane_dependencies": [],
+      "merge_contract": {
+        "owner": "contradiction-hunter",
+        "inputs": [
+          "context-pack.md",
+          "research-plan.md"
+        ],
+        "outputs": [
+          "drafts/contradiction-hunter.md"
+        ],
+        "acceptance_checks": [
+          "Material claims include source references",
+          "Contradictions and gaps remain explicit"
+        ]
+      },
+      "evidence_ref": "subagent-briefs/contradiction-hunter.md"
+    },
+    {
+      "lane_id": "lane-example-fixture-curator",
+      "parallelizable_subproblem_id": "subproblem-example-fixture-curator",
+      "independent_resource_claim": {
+        "resources": [
+          "subagent-briefs/example-fixture-curator.md",
+          "drafts/example-fixture-curator.md"
+        ],
+        "isolation_boundary": "Reads lane inputs and writes only its own brief/draft before synthesis."
+      },
+      "cross_lane_dependencies": [],
+      "merge_contract": {
+        "owner": "example-fixture-curator",
+        "inputs": [
+          "context-pack.md",
+          "research-plan.md"
+        ],
+        "outputs": [
+          "drafts/example-fixture-curator.md"
+        ],
+        "acceptance_checks": [
+          "Material claims include source references",
+          "Contradictions and gaps remain explicit"
+        ]
+      },
+      "evidence_ref": "subagent-briefs/example-fixture-curator.md"
+    },
+    {
+      "lane_id": "lane-final-qa-reviewer",
+      "parallelizable_subproblem_id": "subproblem-final-qa-reviewer",
+      "independent_resource_claim": {
+        "resources": [
+          "subagent-briefs/final-qa-reviewer.md",
+          "drafts/final-qa-reviewer.md"
+        ],
+        "isolation_boundary": "Reads completed lane outputs and writes only final synthesis artifacts."
+      },
+      "cross_lane_dependencies": [
+        "lane-scope-mapper",
+        "lane-openai-deep-research-scout",
+        "lane-claude-research-scout",
+        "lane-gemini-deep-research-scout",
+        "lane-argument-miner",
+        "lane-evidence-ledger-verifier",
+        "lane-corpus-builder",
+        "lane-harness-engineering-runtime",
+        "lane-governance-policy-scout",
+        "lane-cost-latency-benchmark",
+        "lane-arxiv-paper-scout",
+        "lane-contradiction-hunter",
+        "lane-example-fixture-curator"
+      ],
+      "merge_contract": {
+        "owner": "final-qa-reviewer",
+        "inputs": [
+          "context-pack.md",
+          "research-plan.md"
+        ],
+        "outputs": [
+          "drafts/final-qa-reviewer.md"
+        ],
+        "acceptance_checks": [
+          "Material claims include source references",
+          "Contradictions and gaps remain explicit"
+        ]
+      },
+      "evidence_ref": "subagent-briefs/final-qa-reviewer.md"
+    }
+  ]
+}

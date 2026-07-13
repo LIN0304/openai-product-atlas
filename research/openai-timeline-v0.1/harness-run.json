@@ -1,0 +1,88 @@
+{
+  "run_id": "research-7cfd912b-77cc-474b-a875-58889e0c8faa",
+  "created_at": "2026-07-13T08:14:45.102297+00:00",
+  "question": "What official OpenAI product and release events should appear in a canonical timeline from ChatGPT launch on 2022-11-30 through 2026-07-13?",
+  "operator": "codex",
+  "tools_used": [],
+  "source_policy": {
+    "preferred": [
+      "official",
+      "primary",
+      "peer_reviewed",
+      "dataset",
+      "api_doc"
+    ],
+    "allowed": [],
+    "blocked": []
+  },
+  "context_pack": {
+    "trusted": [],
+    "missing": [],
+    "stale": [],
+    "forbidden": []
+  },
+  "lanes": [
+    {
+      "name": "scope-mapper",
+      "status": "planned"
+    },
+    {
+      "name": "openai-deep-research-scout",
+      "status": "planned"
+    },
+    {
+      "name": "claude-research-scout",
+      "status": "planned"
+    },
+    {
+      "name": "gemini-deep-research-scout",
+      "status": "planned"
+    },
+    {
+      "name": "argument-miner",
+      "status": "planned"
+    },
+    {
+      "name": "evidence-ledger-verifier",
+      "status": "planned"
+    },
+    {
+      "name": "corpus-builder",
+      "status": "planned"
+    },
+    {
+      "name": "harness-engineering-runtime",
+      "status": "planned"
+    },
+    {
+      "name": "governance-policy-scout",
+      "status": "planned"
+    },
+    {
+      "name": "cost-latency-benchmark",
+      "status": "planned"
+    },
+    {
+      "name": "arxiv-paper-scout",
+      "status": "planned"
+    },
+    {
+      "name": "contradiction-hunter",
+      "status": "planned"
+    },
+    {
+      "name": "example-fixture-curator",
+      "status": "planned"
+    },
+    {
+      "name": "final-qa-reviewer",
+      "status": "planned"
+    }
+  ],
+  "validation_commands": [
+    "python3 <skill>/scripts/validate_lane_contracts.py lane-contracts.json",
+    "python3 <skill>/scripts/validate_evidence_ledger.py evidence-ledger.json",
+    "python3 <skill>/scripts/check_citation_coverage.py --report final-report.md --ledger evidence-ledger.json"
+  ],
+  "known_failures": []
+}

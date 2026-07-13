@@ -1,0 +1,225 @@
+{
+  "schemaVersion": "1.0",
+  "retrievedAt": "2026-07-13T08:26:32.836Z",
+  "sources": [
+    {
+      "id": "chatgpt-release-notes",
+      "title": "ChatGPT — Release Notes",
+      "url": "https://help.openai.com/en/articles/6825453-chatgpt-release-notes",
+      "sourceKind": "help_center_release_notes",
+      "productScope": [
+        "chatgpt_core",
+        "multimodal",
+        "memory_knowledge",
+        "search_commerce"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/chatgpt-release-notes.md",
+      "bytes": 239356,
+      "status": "retrieved"
+    },
+    {
+      "id": "model-release-notes",
+      "title": "Model Release Notes",
+      "url": "https://help.openai.com/en/articles/9624314-model-release-notes",
+      "sourceKind": "help_center_release_notes",
+      "productScope": [
+        "models_reasoning",
+        "safety_lifecycle"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/model-release-notes.md",
+      "bytes": 39366,
+      "status": "retrieved"
+    },
+    {
+      "id": "chatgpt-agent-release-notes",
+      "title": "ChatGPT agent — Release Notes",
+      "url": "https://help.openai.com/en/articles/11794368-chatgpt-agent-release-notes",
+      "sourceKind": "help_center_release_notes",
+      "productScope": [
+        "agents_research"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/chatgpt-agent-release-notes.md",
+      "bytes": 1125,
+      "status": "retrieved"
+    },
+    {
+      "id": "business-release-notes",
+      "title": "ChatGPT Business — Release Notes",
+      "url": "https://help.openai.com/en/articles/11391654-chatgpt-business-release-notes",
+      "sourceKind": "help_center_release_notes",
+      "productScope": [
+        "enterprise_vertical"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/business-release-notes.md",
+      "bytes": 73921,
+      "status": "retrieved"
+    },
+    {
+      "id": "enterprise-edu-release-notes",
+      "title": "ChatGPT Enterprise & Edu — Release Notes",
+      "url": "https://help.openai.com/en/articles/10128477-chatgpt-enterprise-edu-release-notes",
+      "sourceKind": "help_center_release_notes",
+      "productScope": [
+        "enterprise_vertical"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/enterprise-edu-release-notes.md",
+      "bytes": 121450,
+      "status": "retrieved"
+    },
+    {
+      "id": "macos-release-notes",
+      "title": "ChatGPT macOS app release notes",
+      "url": "https://help.openai.com/en/articles/9703738-desktop-app-release-notes",
+      "sourceKind": "help_center_release_notes",
+      "productScope": [
+        "clients_surfaces"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/macos-release-notes.md",
+      "bytes": 10130,
+      "status": "retrieved"
+    },
+    {
+      "id": "windows-release-notes",
+      "title": "Windows App — Release Notes",
+      "url": "https://help.openai.com/en/articles/10003026-windows-app-release-notes",
+      "sourceKind": "help_center_release_notes",
+      "productScope": [
+        "clients_surfaces"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/windows-release-notes.md",
+      "bytes": 4277,
+      "status": "retrieved"
+    },
+    {
+      "id": "atlas-release-notes",
+      "title": "ChatGPT Atlas — Release Notes",
+      "url": "https://help.openai.com/en/articles/12591856-chatgpt-atlas-release-notes",
+      "sourceKind": "help_center_release_notes",
+      "productScope": [
+        "clients_surfaces",
+        "agents_research"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/atlas-release-notes.md",
+      "bytes": 18361,
+      "status": "retrieved"
+    },
+    {
+      "id": "api-changelog",
+      "title": "OpenAI API Changelog",
+      "url": "https://platform.openai.com/docs/changelog",
+      "sourceKind": "developer_changelog",
+      "productScope": [
+        "developer_platform",
+        "models_reasoning"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/api-changelog.md",
+      "bytes": 36037,
+      "status": "retrieved"
+    },
+    {
+      "id": "api-deprecations",
+      "title": "OpenAI API Deprecations",
+      "url": "https://platform.openai.com/docs/deprecations",
+      "sourceKind": "developer_deprecations",
+      "productScope": [
+        "developer_platform",
+        "safety_lifecycle"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/api-deprecations.md",
+      "bytes": 26171,
+      "status": "retrieved"
+    },
+    {
+      "id": "codex-changelog",
+      "title": "Codex Changelog",
+      "url": "https://developers.openai.com/codex/changelog/",
+      "sourceKind": "developer_changelog",
+      "productScope": [
+        "agents_research",
+        "developer_platform"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/codex-changelog.md",
+      "bytes": 77540,
+      "status": "retrieved"
+    },
+    {
+      "id": "apps-sdk-changelog",
+      "title": "Apps SDK Changelog",
+      "url": "https://developers.openai.com/apps-sdk/changelog/",
+      "sourceKind": "developer_changelog",
+      "productScope": [
+        "developer_platform"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/apps-sdk-changelog.md",
+      "bytes": 42531,
+      "status": "retrieved"
+    },
+    {
+      "id": "introducing-chatgpt",
+      "title": "Introducing ChatGPT",
+      "url": "https://openai.com/index/chatgpt/",
+      "sourceKind": "official_launch_post",
+      "productScope": [
+        "chatgpt_core"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/introducing-chatgpt.md",
+      "bytes": 11789,
+      "status": "retrieved"
+    },
+    {
+      "id": "chatgpt-work-and-codex",
+      "title": "ChatGPT Work and Codex",
+      "url": "https://help.openai.com/en/articles/20001275-chatgpt-work-and-codex",
+      "sourceKind": "official_product_guide",
+      "productScope": [
+        "agents_research"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/chatgpt-work-and-codex.md",
+      "bytes": 8129,
+      "status": "retrieved"
+    },
+    {
+      "id": "sora-discontinuation",
+      "title": "What to know about the Sora discontinuation",
+      "url": "https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation",
+      "sourceKind": "official_lifecycle_notice",
+      "productScope": [
+        "multimodal",
+        "safety_lifecycle"
+      ],
+      "retrievedAt": "2026-07-13T08:26:32.836Z",
+      "extractionTransport": "r.jina.ai read-through of the official URL",
+      "snapshotPath": "research/openai-timeline-v0.1/source-snapshots/sora-discontinuation.md",
+      "bytes": 1280,
+      "status": "retrieved"
+    }
+  ]
+}
