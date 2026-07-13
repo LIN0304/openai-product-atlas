@@ -5,13 +5,14 @@ import test from "node:test";
 const root = new URL("../", import.meta.url);
 
 test("ships the Godot product atlas and accessible HTML index", async () => {
-  const [page, explorer, css, layout, godotHtml, godotPreset] = await Promise.all([
+  const [page, explorer, css, layout, godotHtml, godotPreset, vercelIgnore] = await Promise.all([
     readFile(new URL("app/page.tsx", root), "utf8"),
     readFile(new URL("app/timeline-explorer.tsx", root), "utf8"),
     readFile(new URL("app/globals.css", root), "utf8"),
     readFile(new URL("app/layout.tsx", root), "utf8"),
     readFile(new URL("public/godot/index.html", root), "utf8"),
     readFile(new URL("godot/export_presets.cfg", root), "utf8"),
+    readFile(new URL(".vercelignore", root), "utf8"),
   ]);
   assert.match(page, /<TimelineExplorer initialData=.*initialFilters=/);
   assert.match(explorer, /\/godot\/index\.html/);
@@ -26,6 +27,8 @@ test("ships the Godot product atlas and accessible HTML index", async () => {
   assert.match(layout, /OpenAI Product Atlas/);
   assert.match(godotHtml, /"focusCanvas":false/);
   assert.match(godotPreset, /html\/focus_canvas_on_start=false/);
+  assert.match(vercelIgnore, /^\/godot\/$/m);
+  assert.doesNotMatch(vercelIgnore, /^godot\/$/m);
 });
 
 test("publishes all machine-readable downloads", async () => {
