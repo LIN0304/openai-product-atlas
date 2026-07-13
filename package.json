@@ -13,9 +13,8 @@
     "data:build": "node scripts/build-timeline-data.mjs",
     "data:validate": "node scripts/validate-timeline-data.mjs",
     "research:build": "node scripts/build-research-ledger.mjs",
-    "godot:check": "node scripts/run-godot.mjs check && node scripts/run-godot.mjs runcheck",
-    "godot:export": "node scripts/run-godot.mjs export",
-    "test": "node --test tests/*.test.mjs && npm run data:validate && npm run build",
+    "test:unit": "node --experimental-strip-types --test tests/*.test.mjs tests/*.test.ts",
+    "test": "npm run test:unit && npm run data:validate && npm run build",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next"
   },
   "dependencies": {

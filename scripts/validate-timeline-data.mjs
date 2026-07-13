@@ -374,7 +374,6 @@ export async function validateTimelineData({ root = process.cwd() } = {}) {
     [path.join(publicDataDir, "openai-product-timeline-v0.1.json"), timelineText, "public canonical JSON"],
     [path.join(publicDataDir, "openai-product-timeline-raw-v0.1.json"), rawText, "public raw JSON"],
     [path.join(publicDataDir, "openai-product-timeline-v0.1.csv"), csvText, "public CSV"],
-    [path.join(root, "godot/data/openai-product-timeline-v0.1.json"), timelineText, "Godot canonical JSON"],
   ];
   for (const [filePath, expected, label] of copyChecks) {
     try {

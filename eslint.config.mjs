@@ -13,8 +13,6 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     // Generated artifacts and local verification output.
-    "public/godot/**",
-    "godot/.godot/**",
     ".playwright-cli/**",
     "output/**",
     "outputs/**",

@@ -1,14 +1,31 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "OpenAI Product Atlas — 產品時間線 v0.1",
-  description: "從 ChatGPT 發布到 GPT-5.6 Sol：以 Godot 像素／ASCII 世界呈現的 OpenAI 官方產品時間線。",
+  title: "OpenAI Product Atlas | Walk the release history",
+  description: "A playable, English-language ASCII atlas of 326 official-source OpenAI product events from ChatGPT to GPT-5.6 Sol.",
   metadataBase: new URL("https://openai-product-atlas.vercel.app"),
-  openGraph: { title: "OpenAI Product Atlas", description: "326 個可探索、可搜尋、可追溯官方來源的 OpenAI 產品事件節點。", type: "website" },
-  icons: { icon: "/godot/index.icon.png", apple: "/godot/index.apple-touch-icon.png" },
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "OpenAI Product Atlas",
+    description: "Move NOVA through 326 source-linked events and decode the history of OpenAI products.",
+    type: "website",
+    url: "/",
+  },
+  twitter: {
+    card: "summary",
+    title: "OpenAI Product Atlas",
+    description: "Walk an ASCII release map from ChatGPT to GPT-5.6 Sol.",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#05070b",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="zh-Hant"><body>{children}</body></html>;
+  return <html lang="en"><body>{children}</body></html>;
 }

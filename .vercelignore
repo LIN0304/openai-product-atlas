@@ -4,7 +4,6 @@
 /.wrangler/
 /coverage/
 /dist/
-/godot/
 /output/
 /outputs/
 /playwright-report/

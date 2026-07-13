@@ -6,7 +6,6 @@ const SNAPSHOTS = path.join(ROOT, "research/openai-timeline-v0.1/source-snapshot
 const LANES = path.join(ROOT, "research/openai-timeline-v0.1/lane-results");
 const DATA_DIR = path.join(ROOT, "data");
 const PUBLIC_DATA = path.join(ROOT, "public/data");
-const GODOT_DATA = path.join(ROOT, "godot/data");
 const START = "2022-11-30";
 const CUTOFF = "2026-07-13";
 const TARGET_CANONICAL = 326;
@@ -735,7 +734,7 @@ function toCsv(events) {
   return `${columns.join(",")}\n${events.map((event) => columns.map((column) => csvCell(event[column])).join(",")).join("\n")}\n`;
 }
 
-await Promise.all([DATA_DIR, PUBLIC_DATA, GODOT_DATA].map((directory) => mkdir(directory, { recursive: true })));
+await Promise.all([DATA_DIR, PUBLIC_DATA].map((directory) => mkdir(directory, { recursive: true })));
 const manifest = JSON.parse(await readFile(path.join(SNAPSHOTS, "manifest.json"), "utf8"));
 const sourceMap = Object.fromEntries(manifest.sources.map((source) => [source.id, {
   source: source.id,
@@ -866,7 +865,6 @@ await Promise.all([
   copyFile(jsonPath, path.join(PUBLIC_DATA, path.basename(jsonPath))),
   copyFile(rawPath, path.join(PUBLIC_DATA, path.basename(rawPath))),
   copyFile(csvPath, path.join(PUBLIC_DATA, path.basename(csvPath))),
-  copyFile(jsonPath, path.join(GODOT_DATA, path.basename(jsonPath))),
 ]);
 
 process.stdout.write(`${JSON.stringify(timeline.stats)}\n`);

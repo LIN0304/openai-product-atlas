@@ -42,7 +42,6 @@ next-env.d.ts
 /outputs/
 /output/
 /work/
-/godot/.godot/
 /.playwright-cli/
 /test-results/
 /playwright-report/
