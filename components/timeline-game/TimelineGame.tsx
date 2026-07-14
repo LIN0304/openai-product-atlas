@@ -63,6 +63,7 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
   const shellRef = useRef<HTMLElement>(null);
   const immersiveReturnRef = useRef<HTMLElement | null>(null);
   const immersiveTransitioningRef = useRef(false);
+  const immersiveResetTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const immersiveMountedRef = useRef(false);
   const validIds = useMemo(() => new Set(initialData.events.map((event) => event.event_id)), [initialData.events]);
   const eventById = useMemo(() => new Map(initialData.events.map((event) => [event.event_id, event])), [initialData.events]);
@@ -194,11 +195,32 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
   // (notably iOS Safari). The `immersive` flag is reconciled from the browser
   // via fullscreenchange so ESC, the browser chrome, and OS gestures cannot
   // desync the toggle.
+  const clearImmersiveTransition = useCallback(() => {
+    immersiveTransitioningRef.current = false;
+    if (immersiveResetTimerRef.current !== undefined) {
+      clearTimeout(immersiveResetTimerRef.current);
+      immersiveResetTimerRef.current = undefined;
+    }
+  }, []);
+
+  // Mark a transition in flight, but always arm a timeout backstop: a browser
+  // that resolves (or silently no-ops) a request without dispatching
+  // fullscreenchange/fullscreenerror must never latch the guard forever.
+  const beginImmersiveTransition = useCallback(() => {
+    immersiveTransitioningRef.current = true;
+    if (immersiveResetTimerRef.current !== undefined) clearTimeout(immersiveResetTimerRef.current);
+    immersiveResetTimerRef.current = setTimeout(() => {
+      immersiveTransitioningRef.current = false;
+      immersiveResetTimerRef.current = undefined;
+    }, 1200);
+  }, []);
+
   const enterFallbackImmersive = useCallback(() => {
+    clearImmersiveTransition();
     document.body.style.overflow = "hidden";
     setFallbackImmersive(true);
     setImmersive(true);
-  }, []);
+  }, [clearImmersiveTransition]);
 
   const enterImmersive = useCallback(() => {
     const shell = shellRef.current as (HTMLElement & { webkitRequestFullscreen?: () => Promise<void> | void }) | null;
@@ -214,46 +236,43 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
       enterFallbackImmersive();
       return;
     }
-    immersiveTransitioningRef.current = true;
+    beginImmersiveTransition();
     let result: unknown;
     try {
       result = request();
     } catch {
-      immersiveTransitioningRef.current = false;
       enterFallbackImmersive();
       return;
     }
     // A rejected request (e.g. iPhone Safari reports the method but refuses a
-    // non-video element) degrades to the in-page fallback.
-    if (result && typeof (result as Promise<void>).catch === "function") {
-      (result as Promise<void>).catch(() => {
-        immersiveTransitioningRef.current = false;
-        enterFallbackImmersive();
-      });
+    // non-video element) degrades to the in-page fallback. On success the
+    // fullscreenchange listener flips the state and clears the guard.
+    if (result && typeof (result as Promise<void>).then === "function") {
+      (result as Promise<void>).then(undefined, () => enterFallbackImmersive());
     }
-  }, [immersive, enterFallbackImmersive]);
+  }, [immersive, enterFallbackImmersive, beginImmersiveTransition]);
 
   const exitImmersive = useCallback(() => {
     if (immersiveTransitioningRef.current) return;
     const doc = document as Document & { webkitFullscreenElement?: Element | null; webkitExitFullscreen?: () => Promise<void> | void };
     const fsElement = document.fullscreenElement ?? doc.webkitFullscreenElement ?? null;
     if (fsElement) {
-      immersiveTransitioningRef.current = true;
+      beginImmersiveTransition();
       let result: unknown;
       try {
         result = typeof document.exitFullscreen === "function" ? document.exitFullscreen() : doc.webkitExitFullscreen?.();
       } catch {
-        immersiveTransitioningRef.current = false;
+        clearImmersiveTransition();
         return;
       }
-      if (result && typeof (result as Promise<void>).catch === "function") {
-        (result as Promise<void>).catch(() => { immersiveTransitioningRef.current = false; });
+      if (result && typeof (result as Promise<void>).then === "function") {
+        (result as Promise<void>).then(undefined, () => clearImmersiveTransition());
       }
     } else {
       setFallbackImmersive(false);
       setImmersive(false);
     }
-  }, []);
+  }, [beginImmersiveTransition, clearImmersiveTransition]);
 
   const toggleImmersive = useCallback(() => {
     if (immersive) exitImmersive();
@@ -263,18 +282,33 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
   useEffect(() => {
     const doc = document as Document & { webkitFullscreenElement?: Element | null };
     const sync = () => {
-      immersiveTransitioningRef.current = false;
+      clearImmersiveTransition();
       if (fallbackImmersive) return;
       const active = !!shellRef.current && (document.fullscreenElement ?? doc.webkitFullscreenElement ?? null) === shellRef.current;
       setImmersive(active);
     };
+    // A failed request fires fullscreenerror, not ...change, so clear the guard
+    // there too rather than waiting for the timeout backstop.
     document.addEventListener("fullscreenchange", sync);
     document.addEventListener("webkitfullscreenchange", sync);
+    document.addEventListener("fullscreenerror", clearImmersiveTransition);
+    document.addEventListener("webkitfullscreenerror", clearImmersiveTransition);
     return () => {
       document.removeEventListener("fullscreenchange", sync);
       document.removeEventListener("webkitfullscreenchange", sync);
+      document.removeEventListener("fullscreenerror", clearImmersiveTransition);
+      document.removeEventListener("webkitfullscreenerror", clearImmersiveTransition);
     };
-  }, [fallbackImmersive]);
+  }, [fallbackImmersive, clearImmersiveTransition]);
+
+  // Guarantee the fallback body scroll-lock and the transition timer are
+  // released even if the component unmounts (e.g. a client route change) while
+  // still in immersive mode — the [immersive] effect below only restores them
+  // when immersive flips false, which never runs on unmount.
+  useEffect(() => () => {
+    document.body.style.overflow = "";
+    if (immersiveResetTimerRef.current !== undefined) clearTimeout(immersiveResetTimerRef.current);
+  }, []);
 
   useEffect(() => {
     // Skip the initial mount so a fresh page load stays silent.

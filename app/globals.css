@@ -2473,6 +2473,8 @@ dialog:focus-visible,
 .is-fullscreen .world-section {
   height: calc(100dvh - var(--header-height));
   min-height: 0;
+  display: flex;
+  flex-direction: column;
   padding-block: 8px;
   scroll-margin-top: 0;
   border-bottom: 0;
@@ -2481,6 +2483,7 @@ dialog:focus-visible,
 /* Keep the map actions (filters / zoom / fit / exit) but drop the toolbar
    heading to reclaim vertical space. */
 .is-fullscreen .world-toolbar {
+  flex: 0 0 auto;
   margin-bottom: 8px;
   align-items: center;
 }
@@ -2489,8 +2492,13 @@ dialog:focus-visible,
   display: none;
 }
 
+/* Fill the space left after the (still-present) toolbar row rather than the
+   whole section — otherwise the workspace overflows by the toolbar's height and
+   clips the map's bottom status strip below the fold. */
 .is-fullscreen .game-workspace {
-  height: 100%;
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
 }
 
 /* Neutralize the base 460px floor so the grid's 1fr row owns the height. */
@@ -2579,7 +2587,10 @@ dialog:focus-visible,
     padding-top: 0;
   }
 
+  /* Sit below the ~28px stage-chrome so the toggle never overlaps the
+     right-aligned "Read NNN / NNN" counter. */
   .fs-toggle {
     display: inline-flex;
+    top: 36px;
   }
 }
