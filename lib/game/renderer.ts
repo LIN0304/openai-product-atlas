@@ -25,18 +25,18 @@ export interface DynamicSceneState extends StaticSceneState {
 }
 
 export const GAME_COLORS = {
-  background: "#05070b",
-  surface: "#09110f",
-  grid: "#17312d",
-  text: "#e9f0e8",
-  muted: "#87928a",
-  cyan: "#00f0ff",
-  acid: "#e6ff4a",
-  magenta: "#ff4fd8",
-  warning: "#ff6f75",
+  background: "#0d0d0d",
+  surface: "#191919",
+  grid: "rgba(255,255,255,0.05)",
+  text: "#ececec",
+  muted: "#8a8a8a",
+  cyan: "#8f9a96", // "visited / hover" — muted, reads as already-read
+  acid: "#25c98f", // NOVA + waypoints — the OpenAI-green brand marker
+  magenta: "#ffffff", // active selection — clean high-contrast
+  warning: "#f2b34b",
 } as const;
 
-const FONT_STACK = '"Geist Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace';
+const FONT_STACK = 'ui-monospace, "SF Mono", "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
 const MIN_ZOOM = 0.075;
 const MAX_ZOOM = 3.2;
 
@@ -147,11 +147,10 @@ function drawGrid(context: CanvasRenderingContext2D, metrics: CanvasMetrics): vo
   context.fillStyle = GAME_COLORS.background;
   context.fillRect(0, 0, metrics.width, metrics.height);
 
+  // A calm plotting grid: thin, evenly spaced lines at low opacity.
   context.strokeStyle = GAME_COLORS.grid;
-  context.globalAlpha = 0.34;
   context.lineWidth = 1;
-  context.setLineDash([1, 9]);
-  const step = metrics.width < 520 ? 32 : 48;
+  const step = metrics.width < 520 ? 44 : 64;
   for (let x = 0.5; x <= metrics.width; x += step) {
     context.beginPath();
     context.moveTo(x, 0);
@@ -174,26 +173,28 @@ function drawYearGuides(
   camera: CameraTransform,
 ): void {
   context.save();
-  context.font = `600 10px ${FONT_STACK}`;
+  context.font = `600 11px ${FONT_STACK}`;
   context.textAlign = "center";
   context.textBaseline = "top";
-  context.strokeStyle = GAME_COLORS.muted;
-  context.fillStyle = GAME_COLORS.muted;
-  context.globalAlpha = 0.7;
-  context.setLineDash([4, 8]);
   let lastLabelRight = Number.NEGATIVE_INFINITY;
   for (const guide of yearGuides(world)) {
     const screen = worldToScreen({ x: guide.x, y: world.bounds.minY }, camera, metrics);
     if (screen.x < -24 || screen.x > metrics.width + 24) continue;
+    context.strokeStyle = "rgba(255,255,255,0.08)";
+    context.globalAlpha = 1;
+    context.setLineDash([2, 6]);
     context.beginPath();
-    context.moveTo(Math.round(screen.x) + 0.5, 22);
+    context.moveTo(Math.round(screen.x) + 0.5, 24);
     context.lineTo(Math.round(screen.x) + 0.5, metrics.height);
     context.stroke();
-    const label = `YEAR // ${guide.year}`;
+    const label = `${guide.year}`;
     const width = context.measureText(label).width;
     const left = screen.x - width / 2;
     if (left > lastLabelRight + 8) {
-      context.fillText(label, screen.x, 7);
+      context.setLineDash([]);
+      context.fillStyle = GAME_COLORS.muted;
+      context.globalAlpha = 0.92;
+      context.fillText(label, screen.x, 8);
       lastLabelRight = left + width;
     }
   }
@@ -327,19 +328,20 @@ function drawWaypoint(
   const player = worldToScreen(state.player, state.camera, metrics);
   const target = worldToScreen(waypoint, state.camera, metrics);
   context.save();
-  context.strokeStyle = GAME_COLORS.magenta;
-  context.fillStyle = GAME_COLORS.magenta;
-  context.globalAlpha = 0.88;
-  context.lineWidth = 1;
-  context.setLineDash([2, 6]);
+  context.strokeStyle = GAME_COLORS.acid;
+  context.fillStyle = GAME_COLORS.acid;
+  context.globalAlpha = 0.85;
+  context.lineWidth = 1.25;
+  context.setLineDash([3, 5]);
   context.beginPath();
   context.moveTo(player.x, player.y);
   context.lineTo(target.x, target.y);
   context.stroke();
-  context.font = `700 9px ${FONT_STACK}`;
+  context.font = `600 10px ${FONT_STACK}`;
   context.textAlign = "center";
   context.textBaseline = "bottom";
-  context.fillText("...> WAYPOINT", (player.x + target.x) / 2, (player.y + target.y) / 2 - 4);
+  context.setLineDash([]);
+  context.fillText("→ waypoint", (player.x + target.x) / 2, (player.y + target.y) / 2 - 5);
   context.restore();
 }
 
@@ -395,37 +397,46 @@ function drawPlayer(
   state: DynamicSceneState,
 ): void {
   const screen = worldToScreen(state.player, state.camera, metrics);
+  const detailed = state.camera.zoom >= 0.42 && metrics.width >= 460;
   context.save();
-  context.fillStyle = GAME_COLORS.acid;
-  context.strokeStyle = GAME_COLORS.acid;
   context.textAlign = "center";
   context.textBaseline = "middle";
-  context.globalAlpha = 1;
 
+  // Soft animated halo — a calm pulse rather than a flickering dashed box.
   if (!state.reducedMotion) {
-    const phase = (state.timestamp % 1_500) / 1_500;
-    const radius = 16 + phase * 7;
-    context.globalAlpha = 0.45 * (1 - phase);
-    context.setLineDash([3, 5]);
-    context.strokeRect(
-      Math.round(screen.x - radius) + 0.5,
-      Math.round(screen.y - radius) + 0.5,
-      Math.round(radius * 2),
-      Math.round(radius * 2),
-    );
-    context.globalAlpha = 1;
+    const phase = (state.timestamp % 2_200) / 2_200;
+    const radius = 9 + phase * 16;
+    context.globalAlpha = 0.28 * (1 - phase);
+    context.fillStyle = GAME_COLORS.acid;
+    context.beginPath();
+    context.arc(screen.x, screen.y, radius, 0, Math.PI * 2);
+    context.fill();
   }
 
-  if (state.camera.zoom >= 0.42 && metrics.width >= 460) {
-    context.font = `900 11px ${FONT_STACK}`;
-    context.fillText("[::]", screen.x, screen.y - 13);
-    context.fillText("/|\\", screen.x, screen.y);
-    context.fillText("/ \\", screen.x, screen.y + 13);
-    context.font = `800 9px ${FONT_STACK}`;
-    context.fillText("NOVA", screen.x, screen.y + 29);
-  } else {
-    context.font = `900 15px ${FONT_STACK}`;
-    context.fillText("@", screen.x, screen.y);
+  // Outer ring
+  context.globalAlpha = 0.9;
+  context.strokeStyle = GAME_COLORS.acid;
+  context.lineWidth = 1.5;
+  context.beginPath();
+  context.arc(screen.x, screen.y, detailed ? 8 : 6, 0, Math.PI * 2);
+  context.stroke();
+
+  // Solid core with a bright center
+  context.globalAlpha = 1;
+  context.fillStyle = GAME_COLORS.acid;
+  context.beginPath();
+  context.arc(screen.x, screen.y, detailed ? 4.5 : 3.5, 0, Math.PI * 2);
+  context.fill();
+  context.fillStyle = GAME_COLORS.background;
+  context.beginPath();
+  context.arc(screen.x, screen.y, detailed ? 1.6 : 1.3, 0, Math.PI * 2);
+  context.fill();
+
+  if (detailed) {
+    context.fillStyle = GAME_COLORS.acid;
+    context.font = `600 10px ${FONT_STACK}`;
+    context.textBaseline = "top";
+    context.fillText("NOVA", screen.x, screen.y + (detailed ? 12 : 10));
   }
   context.restore();
 }

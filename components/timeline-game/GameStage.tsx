@@ -252,7 +252,7 @@ export const GameStage = forwardRef<GameStageHandle, GameStageProps>(function Ga
         >
           {fallback}
         </canvas>
-        {!renderReady && <div className="game-stage__boot" aria-hidden="true">&gt;_ BUILDING TIMELINE TOPOLOGY...</div>}
+        {!renderReady && <div className="game-stage__boot" aria-hidden="true">Building timeline topology…</div>}
       </div>
       <output className="game-stage__live sr-only" aria-live="polite" aria-atomic="true">
         {liveText}
