@@ -60,6 +60,10 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
   const stageRef = useRef<GameStageHandle>(null);
   const filterReturnTargetRef = useRef<HTMLElement | null>(null);
   const dialogReturnTargetRef = useRef<HTMLElement | null>(null);
+  const shellRef = useRef<HTMLElement>(null);
+  const immersiveReturnRef = useRef<HTMLElement | null>(null);
+  const immersiveTransitioningRef = useRef(false);
+  const immersiveMountedRef = useRef(false);
   const validIds = useMemo(() => new Set(initialData.events.map((event) => event.event_id)), [initialData.events]);
   const eventById = useMemo(() => new Map(initialData.events.map((event) => [event.event_id, event])), [initialData.events]);
   const familyById = useMemo(() => new Map(initialData.taxonomy.map((family) => [family.id, family])), [initialData.taxonomy]);
@@ -85,6 +89,8 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
   const [theme, setTheme] = useState<GameTheme>("openai");
   const [reducedMotion, setReducedMotion] = useState<boolean | undefined>(undefined);
   const [copied, setCopied] = useState(false);
+  const [immersive, setImmersive] = useState(false);
+  const [fallbackImmersive, setFallbackImmersive] = useState(false);
   const [pendingRoute, setPendingRoute] = useState<{ eventId: string; focus: boolean } | null>(
     initialView.view === "map" && initialRouteId
       ? { eventId: initialRouteId, focus: false }
@@ -183,6 +189,116 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
       : "Switched to OpenAI theme.");
   }, []);
 
+  // Full-screen / immersive map. Native Fullscreen API is the primary path;
+  // a fixed-overlay CSS fallback covers engines without element fullscreen
+  // (notably iOS Safari). The `immersive` flag is reconciled from the browser
+  // via fullscreenchange so ESC, the browser chrome, and OS gestures cannot
+  // desync the toggle.
+  const enterFallbackImmersive = useCallback(() => {
+    document.body.style.overflow = "hidden";
+    setFallbackImmersive(true);
+    setImmersive(true);
+  }, []);
+
+  const enterImmersive = useCallback(() => {
+    const shell = shellRef.current as (HTMLElement & { webkitRequestFullscreen?: () => Promise<void> | void }) | null;
+    if (!shell || immersiveTransitioningRef.current || immersive) return;
+    immersiveReturnRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const webkitRequest = shell.webkitRequestFullscreen;
+    const request = typeof shell.requestFullscreen === "function"
+      ? () => shell.requestFullscreen()
+      : typeof webkitRequest === "function"
+        ? () => webkitRequest.call(shell)
+        : null;
+    if (!request) {
+      enterFallbackImmersive();
+      return;
+    }
+    immersiveTransitioningRef.current = true;
+    let result: unknown;
+    try {
+      result = request();
+    } catch {
+      immersiveTransitioningRef.current = false;
+      enterFallbackImmersive();
+      return;
+    }
+    // A rejected request (e.g. iPhone Safari reports the method but refuses a
+    // non-video element) degrades to the in-page fallback.
+    if (result && typeof (result as Promise<void>).catch === "function") {
+      (result as Promise<void>).catch(() => {
+        immersiveTransitioningRef.current = false;
+        enterFallbackImmersive();
+      });
+    }
+  }, [immersive, enterFallbackImmersive]);
+
+  const exitImmersive = useCallback(() => {
+    if (immersiveTransitioningRef.current) return;
+    const doc = document as Document & { webkitFullscreenElement?: Element | null; webkitExitFullscreen?: () => Promise<void> | void };
+    const fsElement = document.fullscreenElement ?? doc.webkitFullscreenElement ?? null;
+    if (fsElement) {
+      immersiveTransitioningRef.current = true;
+      let result: unknown;
+      try {
+        result = typeof document.exitFullscreen === "function" ? document.exitFullscreen() : doc.webkitExitFullscreen?.();
+      } catch {
+        immersiveTransitioningRef.current = false;
+        return;
+      }
+      if (result && typeof (result as Promise<void>).catch === "function") {
+        (result as Promise<void>).catch(() => { immersiveTransitioningRef.current = false; });
+      }
+    } else {
+      setFallbackImmersive(false);
+      setImmersive(false);
+    }
+  }, []);
+
+  const toggleImmersive = useCallback(() => {
+    if (immersive) exitImmersive();
+    else enterImmersive();
+  }, [immersive, enterImmersive, exitImmersive]);
+
+  useEffect(() => {
+    const doc = document as Document & { webkitFullscreenElement?: Element | null };
+    const sync = () => {
+      immersiveTransitioningRef.current = false;
+      if (fallbackImmersive) return;
+      const active = !!shellRef.current && (document.fullscreenElement ?? doc.webkitFullscreenElement ?? null) === shellRef.current;
+      setImmersive(active);
+    };
+    document.addEventListener("fullscreenchange", sync);
+    document.addEventListener("webkitfullscreenchange", sync);
+    return () => {
+      document.removeEventListener("fullscreenchange", sync);
+      document.removeEventListener("webkitfullscreenchange", sync);
+    };
+  }, [fallbackImmersive]);
+
+  useEffect(() => {
+    // Skip the initial mount so a fresh page load stays silent.
+    if (!immersiveMountedRef.current) {
+      immersiveMountedRef.current = true;
+      return;
+    }
+    if (immersive) {
+      window.requestAnimationFrame(() => {
+        setAnnouncement("Entered full screen. Press F or Escape to exit.");
+        stageRef.current?.focus();
+      });
+    } else {
+      document.body.style.overflow = "";
+      const target = immersiveReturnRef.current;
+      immersiveReturnRef.current = null;
+      window.requestAnimationFrame(() => {
+        setAnnouncement("Exited full screen.");
+        if (target?.isConnected) target.focus();
+        else stageRef.current?.focus();
+      });
+    }
+  }, [immersive]);
+
   useEffect(() => {
     const handlePopState = () => {
       const parsed = parseTimelineViewState(window.location.search, initialData);
@@ -224,6 +340,23 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
         });
         return;
       }
+      if (event.key === "Escape" && immersive) {
+        // Native fullscreen consumes ESC itself (the browser exits and fires
+        // fullscreenchange); only the CSS-only fallback needs a manual exit.
+        const doc = document as Document & { webkitFullscreenElement?: Element | null };
+        if (!document.fullscreenElement && !doc.webkitFullscreenElement) {
+          event.preventDefault();
+          exitImmersive();
+        }
+        return;
+      }
+      if ((event.key === "f" || event.key === "F") && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        const fsTarget = event.target as HTMLElement | null;
+        if (fsTarget?.matches("input, textarea, select, [contenteditable='true']")) return;
+        event.preventDefault();
+        toggleImmersive();
+        return;
+      }
       if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey) return;
       const target = event.target as HTMLElement | null;
       if (target?.matches("input, textarea, select, [contenteditable='true']")) return;
@@ -236,7 +369,7 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
     };
     window.addEventListener("keydown", handleGlobalKey);
     return () => window.removeEventListener("keydown", handleGlobalKey);
-  }, [dialogOpen, filtersOpen]);
+  }, [dialogOpen, filtersOpen, immersive, exitImmersive, toggleImmersive]);
 
   useEffect(() => {
     if (initialView.view !== "index") return;
@@ -411,7 +544,10 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
   const stats = initialData.stats;
 
   return (
-    <main className="atlas-shell">
+    <main
+      ref={shellRef}
+      className={`atlas-shell${immersive ? " is-fullscreen" : ""}${fallbackImmersive ? " is-fullscreen--fallback" : ""}`}
+    >
       <a className="skip-link" href="#event-index">Skip to event index</a>
 
       <header className="site-header">
@@ -461,6 +597,7 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
             <button type="button" onClick={() => stageRef.current?.zoomBy(0.82)} aria-label="Zoom out">−</button>
             <button type="button" onClick={() => stageRef.current?.zoomBy(1.22)} aria-label="Zoom in">+</button>
             <button type="button" onClick={() => stageRef.current?.fit()}>Fit</button>
+            <button type="button" className="toolbar-fs" aria-pressed={immersive} onClick={toggleImmersive}>{immersive ? "Exit full screen" : "Full screen"}</button>
           </div>
         </div>
 
@@ -532,6 +669,16 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
               onRead={handleRead}
               onMap={() => stageRef.current?.fit()}
             />
+
+            <button
+              type="button"
+              className="fs-toggle"
+              aria-pressed={immersive}
+              aria-label={immersive ? "Exit full screen" : "Enter full screen"}
+              onClick={toggleImmersive}
+            >
+              <span aria-hidden="true">{immersive ? "⤡" : "⤢"}</span>
+            </button>
 
             <div className="map-status-strip">
               <span>Landmark · Major · Update</span>

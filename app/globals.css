@@ -2423,3 +2423,163 @@ dialog:focus-visible,
     animation-iteration-count: 1 !important;
   }
 }
+
+/* =========================================================================
+   Full-screen / immersive map mode
+   The whole <main class="atlas-shell"> is the fullscreen target (native
+   Fullscreen API), so the header, playable map, touch controls, and the
+   record <dialog> all stay in the painted subtree. A `.is-fullscreen--fallback`
+   fixed overlay covers engines without element fullscreen (iOS Safari).
+   Every override is scoped under .is-fullscreen and uses theme tokens, so both
+   the OpenAI and ASCII skins hold and the non-immersive layout is untouched.
+   ========================================================================= */
+
+/* Native fullscreen: paint the theme background and neutralize the UA's
+   default black ::backdrop. Do NOT set size/position here — the UA sizes the
+   fullscreen element to the screen. */
+.atlas-shell:fullscreen,
+.atlas-shell:-webkit-full-screen {
+  background: var(--bg);
+}
+
+.atlas-shell:fullscreen::backdrop,
+.atlas-shell:-webkit-full-screen::backdrop {
+  background: var(--bg);
+}
+
+/* CSS-only fallback fill. z-index 200 clears the sticky header (50) and the
+   filter drawers (80/90) but stays below the skip-link (1000). */
+.atlas-shell.is-fullscreen--fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+/* Collapse the editorial page to just the header + playable map. The header
+   stays so the theme toggle and the "Exit full screen" toolbar action remain
+   reachable in every regime. */
+.is-fullscreen .atlas-intro,
+.is-fullscreen .world-shortcuts,
+.is-fullscreen .recent-landmarks,
+.is-fullscreen .archive-index,
+.is-fullscreen .method-section,
+.is-fullscreen .download-section,
+.is-fullscreen .site-footer {
+  display: none;
+}
+
+.is-fullscreen .world-section {
+  height: calc(100dvh - var(--header-height));
+  min-height: 0;
+  padding-block: 8px;
+  scroll-margin-top: 0;
+  border-bottom: 0;
+}
+
+/* Keep the map actions (filters / zoom / fit / exit) but drop the toolbar
+   heading to reclaim vertical space. */
+.is-fullscreen .world-toolbar {
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.is-fullscreen .world-toolbar > div:first-child {
+  display: none;
+}
+
+.is-fullscreen .game-workspace {
+  height: 100%;
+}
+
+/* Neutralize the base 460px floor so the grid's 1fr row owns the height. */
+.is-fullscreen .game-stage {
+  min-height: 0;
+}
+
+.toolbar-fs[aria-pressed="true"] {
+  border-color: var(--accent-border);
+  color: var(--text);
+}
+
+/* Floating map toggle — the enter/exit control for short-landscape, where the
+   world-toolbar is hidden. Built from tokens so it squares off in the ASCII
+   skin and meets the 44px touch-target minimum. Hidden elsewhere. */
+.fs-toggle {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 20;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-2);
+  font-family: var(--font-mono);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.fs-toggle:hover {
+  background: var(--surface-2);
+  border-color: var(--border-3);
+}
+
+/* Desktop immersive: keep the filter rail, drop the inspector, map takes 1fr. */
+@media (min-width: 1181px) and (min-height: 481px) {
+  .is-fullscreen .game-workspace {
+    grid-template-columns: 264px minmax(0, 1fr);
+  }
+
+  .is-fullscreen .event-inspector {
+    display: none;
+  }
+}
+
+/* Tablet immersive: rail is already a drawer, inspector drops, map full width. */
+@media (min-width: 768px) and (max-width: 1180px) and (min-height: 481px) {
+  .is-fullscreen .game-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .is-fullscreen .event-inspector {
+    display: none;
+  }
+}
+
+/* Phone portrait immersive: workspace is block, so let .game-column's grid own
+   the height and release the 46dvh / 440px cap that otherwise pins the canvas. */
+@media (max-width: 767px) and (min-height: 481px) {
+  .is-fullscreen .game-column {
+    height: 100%;
+  }
+
+  .is-fullscreen .game-stage {
+    height: auto;
+    max-height: none;
+  }
+}
+
+/* Short-landscape: the base layout is already near-fullscreen, so keep its
+   3-column grid and visible inspector — only reclaim the top padding. The
+   world-toolbar is hidden here, so surface the floating toggle for enter/exit,
+   anchored top-right clear of the bottom-left D-pad overlay. */
+@media (max-height: 480px) and (orientation: landscape) {
+  .is-fullscreen .world-section {
+    padding-top: 0;
+  }
+
+  .fs-toggle {
+    display: inline-flex;
+  }
+}
