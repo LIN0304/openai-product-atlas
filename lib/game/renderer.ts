@@ -24,17 +24,58 @@ export interface DynamicSceneState extends StaticSceneState {
   readonly timestamp: number;
 }
 
-export const GAME_COLORS = {
-  background: "#0d0d0d",
-  surface: "#191919",
-  grid: "rgba(255,255,255,0.05)",
-  text: "#ececec",
-  muted: "#8a8a8a",
-  cyan: "#8f9a96", // "visited / hover" — muted, reads as already-read
-  acid: "#25c98f", // NOVA + waypoints — the OpenAI-green brand marker
-  magenta: "#ffffff", // active selection — clean high-contrast
-  warning: "#f2b34b",
-} as const;
+export interface GamePalette {
+  readonly background: string;
+  readonly surface: string;
+  readonly grid: string;
+  readonly text: string;
+  readonly muted: string;
+  readonly cyan: string; // visited / hover
+  readonly acid: string; // NOVA + waypoints
+  readonly magenta: string; // active selection
+  readonly warning: string;
+}
+
+/**
+ * Two skins share one layout. "openai" is the calm neutral+green mode;
+ * "cyber" restores the original restrained-cyberpunk neon palette.
+ */
+export const THEME_PALETTES = {
+  openai: {
+    background: "#0d0d0d",
+    surface: "#191919",
+    grid: "rgba(255,255,255,0.05)",
+    text: "#ececec",
+    muted: "#8a8a8a",
+    cyan: "#8f9a96", // muted — reads as already-read
+    acid: "#25c98f", // NOVA + waypoints — the OpenAI-green marker
+    magenta: "#ffffff", // active selection — clean high-contrast
+    warning: "#f2b34b",
+  },
+  cyber: {
+    background: "#05070b",
+    surface: "#09110f",
+    grid: "#17312d",
+    text: "#e9f0e8",
+    muted: "#87928a",
+    cyan: "#00f0ff",
+    acid: "#e6ff4a",
+    magenta: "#ff4fd8",
+    warning: "#ff6f75",
+  },
+} as const satisfies Record<string, GamePalette>;
+
+export type GameTheme = keyof typeof THEME_PALETTES;
+
+let ACTIVE_THEME: GameTheme = "openai";
+let GAME_COLORS: GamePalette = THEME_PALETTES.openai;
+
+/** Swap the active canvas palette + glyph mode. The controller marks the
+ *  static layer dirty so the change is repainted on the next frame. */
+export function setRendererTheme(theme: GameTheme): void {
+  ACTIVE_THEME = theme;
+  GAME_COLORS = THEME_PALETTES[theme];
+}
 
 const FONT_STACK = 'ui-monospace, "SF Mono", "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace';
 const MIN_ZOOM = 0.075;
@@ -147,10 +188,17 @@ function drawGrid(context: CanvasRenderingContext2D, metrics: CanvasMetrics): vo
   context.fillStyle = GAME_COLORS.background;
   context.fillRect(0, 0, metrics.width, metrics.height);
 
-  // A calm plotting grid: thin, evenly spaced lines at low opacity.
   context.strokeStyle = GAME_COLORS.grid;
   context.lineWidth = 1;
-  const step = metrics.width < 520 ? 44 : 64;
+  if (ACTIVE_THEME === "cyber") {
+    // Original dense dotted crosshatch — a terminal texture.
+    context.globalAlpha = 0.34;
+    context.setLineDash([1, 9]);
+  }
+  // Calm plotting grid in openai; denser step in cyber.
+  const step = ACTIVE_THEME === "cyber"
+    ? (metrics.width < 520 ? 32 : 48)
+    : (metrics.width < 520 ? 44 : 64);
   for (let x = 0.5; x <= metrics.width; x += step) {
     context.beginPath();
     context.moveTo(x, 0);
@@ -172,29 +220,30 @@ function drawYearGuides(
   world: WorldModel,
   camera: CameraTransform,
 ): void {
+  const cyber = ACTIVE_THEME === "cyber";
   context.save();
-  context.font = `600 11px ${FONT_STACK}`;
+  context.font = `600 ${cyber ? 10 : 11}px ${FONT_STACK}`;
   context.textAlign = "center";
   context.textBaseline = "top";
   let lastLabelRight = Number.NEGATIVE_INFINITY;
   for (const guide of yearGuides(world)) {
     const screen = worldToScreen({ x: guide.x, y: world.bounds.minY }, camera, metrics);
     if (screen.x < -24 || screen.x > metrics.width + 24) continue;
-    context.strokeStyle = "rgba(255,255,255,0.08)";
-    context.globalAlpha = 1;
-    context.setLineDash([2, 6]);
+    context.strokeStyle = cyber ? GAME_COLORS.muted : "rgba(255,255,255,0.08)";
+    context.globalAlpha = cyber ? 0.7 : 1;
+    context.setLineDash(cyber ? [4, 8] : [2, 6]);
     context.beginPath();
-    context.moveTo(Math.round(screen.x) + 0.5, 24);
+    context.moveTo(Math.round(screen.x) + 0.5, cyber ? 22 : 24);
     context.lineTo(Math.round(screen.x) + 0.5, metrics.height);
     context.stroke();
-    const label = `${guide.year}`;
+    const label = cyber ? `YEAR // ${guide.year}` : `${guide.year}`;
     const width = context.measureText(label).width;
     const left = screen.x - width / 2;
     if (left > lastLabelRight + 8) {
       context.setLineDash([]);
       context.fillStyle = GAME_COLORS.muted;
-      context.globalAlpha = 0.92;
-      context.fillText(label, screen.x, 8);
+      context.globalAlpha = cyber ? 0.7 : 0.92;
+      context.fillText(label, screen.x, cyber ? 7 : 8);
       lastLabelRight = left + width;
     }
   }
@@ -325,23 +374,25 @@ function drawWaypoint(
   if (!state.waypointStationId) return;
   const waypoint = world.stationById.get(state.waypointStationId);
   if (!waypoint) return;
+  const cyber = ACTIVE_THEME === "cyber";
+  const guideColor = cyber ? GAME_COLORS.magenta : GAME_COLORS.acid;
   const player = worldToScreen(state.player, state.camera, metrics);
   const target = worldToScreen(waypoint, state.camera, metrics);
   context.save();
-  context.strokeStyle = GAME_COLORS.acid;
-  context.fillStyle = GAME_COLORS.acid;
-  context.globalAlpha = 0.85;
-  context.lineWidth = 1.25;
-  context.setLineDash([3, 5]);
+  context.strokeStyle = guideColor;
+  context.fillStyle = guideColor;
+  context.globalAlpha = cyber ? 0.88 : 0.85;
+  context.lineWidth = cyber ? 1 : 1.25;
+  context.setLineDash(cyber ? [2, 6] : [3, 5]);
   context.beginPath();
   context.moveTo(player.x, player.y);
   context.lineTo(target.x, target.y);
   context.stroke();
-  context.font = `600 10px ${FONT_STACK}`;
+  context.font = `${cyber ? "700 9px" : "600 10px"} ${FONT_STACK}`;
   context.textAlign = "center";
   context.textBaseline = "bottom";
-  context.setLineDash([]);
-  context.fillText("→ waypoint", (player.x + target.x) / 2, (player.y + target.y) / 2 - 5);
+  if (!cyber) context.setLineDash([]);
+  context.fillText(cyber ? "...> WAYPOINT" : "→ waypoint", (player.x + target.x) / 2, (player.y + target.y) / 2 - (cyber ? 4 : 5));
   context.restore();
 }
 
@@ -401,29 +452,55 @@ function drawPlayer(
   context.save();
   context.textAlign = "center";
   context.textBaseline = "middle";
+  context.fillStyle = GAME_COLORS.acid;
+  context.strokeStyle = GAME_COLORS.acid;
 
-  // Soft animated halo — a calm pulse rather than a flickering dashed box.
+  if (ACTIVE_THEME === "cyber") {
+    // Original ASCII avatar: a flickering dashed halo and a stick figure.
+    if (!state.reducedMotion) {
+      const phase = (state.timestamp % 1_500) / 1_500;
+      const radius = 16 + phase * 7;
+      context.globalAlpha = 0.45 * (1 - phase);
+      context.setLineDash([3, 5]);
+      context.strokeRect(
+        Math.round(screen.x - radius) + 0.5,
+        Math.round(screen.y - radius) + 0.5,
+        Math.round(radius * 2),
+        Math.round(radius * 2),
+      );
+      context.setLineDash([]);
+      context.globalAlpha = 1;
+    }
+    if (detailed) {
+      context.font = `900 11px ${FONT_STACK}`;
+      context.fillText("[::]", screen.x, screen.y - 13);
+      context.fillText("/|\\", screen.x, screen.y);
+      context.fillText("/ \\", screen.x, screen.y + 13);
+      context.font = `800 9px ${FONT_STACK}`;
+      context.fillText("NOVA", screen.x, screen.y + 29);
+    } else {
+      context.font = `900 15px ${FONT_STACK}`;
+      context.fillText("@", screen.x, screen.y);
+    }
+    context.restore();
+    return;
+  }
+
+  // OpenAI mode: a clean "you-are-here" marker with a soft pulse.
   if (!state.reducedMotion) {
     const phase = (state.timestamp % 2_200) / 2_200;
     const radius = 9 + phase * 16;
     context.globalAlpha = 0.28 * (1 - phase);
-    context.fillStyle = GAME_COLORS.acid;
     context.beginPath();
     context.arc(screen.x, screen.y, radius, 0, Math.PI * 2);
     context.fill();
   }
-
-  // Outer ring
   context.globalAlpha = 0.9;
-  context.strokeStyle = GAME_COLORS.acid;
   context.lineWidth = 1.5;
   context.beginPath();
   context.arc(screen.x, screen.y, detailed ? 8 : 6, 0, Math.PI * 2);
   context.stroke();
-
-  // Solid core with a bright center
   context.globalAlpha = 1;
-  context.fillStyle = GAME_COLORS.acid;
   context.beginPath();
   context.arc(screen.x, screen.y, detailed ? 4.5 : 3.5, 0, Math.PI * 2);
   context.fill();
@@ -431,12 +508,11 @@ function drawPlayer(
   context.beginPath();
   context.arc(screen.x, screen.y, detailed ? 1.6 : 1.3, 0, Math.PI * 2);
   context.fill();
-
   if (detailed) {
     context.fillStyle = GAME_COLORS.acid;
     context.font = `600 10px ${FONT_STACK}`;
     context.textBaseline = "top";
-    context.fillText("NOVA", screen.x, screen.y + (detailed ? 12 : 10));
+    context.fillText("NOVA", screen.x, screen.y + 12);
   }
   context.restore();
 }

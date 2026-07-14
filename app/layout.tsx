@@ -26,6 +26,15 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
+const themeScript = `(function(){try{var t=localStorage.getItem("atlas:theme");document.documentElement.dataset.theme=(t==="openai"||t==="cyber")?t:"openai";}catch(e){document.documentElement.dataset.theme="openai";}})();`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return (
+    <html lang="en" data-theme="openai">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body>{children}</body>
+    </html>
+  );
 }

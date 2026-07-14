@@ -57,6 +57,82 @@
   --header-height: 60px;
   --btn-min: 36px;
   --page-x: clamp(20px, 5vw, 72px);
+
+  /* Skin tokens — swapped wholesale by [data-theme="cyber"] below.
+     Everything structural (layout, spacing, responsive) is shared; only
+     these palette/shape/type tokens differ between the two modes. */
+  --font-ui: var(--font-sans);
+  --body-bg:
+    radial-gradient(1200px 620px at 78% -8%, rgba(16, 163, 127, 0.08), transparent 60%),
+    var(--bg);
+  --header-bg: color-mix(in srgb, var(--bg) 82%, transparent);
+  --header-blur: saturate(140%) blur(12px);
+  --overlay-blur: blur(14px);
+  --logo-bg: conic-gradient(from 210deg, var(--accent), #35d0a3, var(--accent));
+  --logo-radius: 50%;
+  --logo-shadow: 0 0 0 3px var(--accent-soft);
+  --chip-border-style: solid;
+  --heading-transform: none;
+  --heading-family: var(--font-sans);
+  --h1-tracking: -0.035em;
+  --h2-tracking: -0.028em;
+  --glow: none;
+}
+
+/* ------------------------------------------------ ASCII + cyberpunk skin */
+:root[data-theme="cyber"] {
+  --bg: #05070b;
+  --bg-2: #030508;
+  --surface: #09110f;
+  --surface-2: #0b1520;
+  --surface-3: #101e1b;
+  --surface-4: #16241f;
+
+  --border: #17312d;
+  --border-2: #28534c;
+  --border-3: #357066;
+
+  --text: #e9f0e8;
+  --text-2: #c7d1ca;
+  --muted: #87928a;
+  --faint: #5c6b64;
+
+  --accent: #58f6d0;
+  --accent-hover: #7dfadd;
+  --accent-press: #38c5a6;
+  --accent-text: #58f6d0;
+  --accent-soft: rgba(88, 246, 208, 0.1);
+  --accent-border: #28534c;
+  --focus: #d8ff5b;
+
+  --danger: #ff6f75;
+  --warning: #ffc857;
+
+  --r-xs: 0;
+  --r-sm: 0;
+  --r: 0;
+  --r-lg: 0;
+  --r-xl: 0;
+  --r-pill: 0;
+
+  --shadow-1: none;
+  --shadow-2: 6px 6px 0 rgba(0, 0, 0, 0.5);
+  --shadow-3: 8px 8px 0 rgba(0, 0, 0, 0.55);
+
+  --font-ui: var(--font-mono);
+  --body-bg: var(--bg);
+  --header-bg: var(--bg);
+  --header-blur: none;
+  --overlay-blur: none;
+  --logo-bg: var(--accent);
+  --logo-radius: 0;
+  --logo-shadow: 0 0 10px var(--accent);
+  --chip-border-style: dashed;
+  --heading-transform: uppercase;
+  --heading-family: var(--font-mono);
+  --h1-tracking: -0.05em;
+  --h2-tracking: -0.03em;
+  --glow: 0 0 12px currentColor;
 }
 
 * {
@@ -73,11 +149,10 @@ html {
 
 body {
   margin: 0;
-  background:
-    radial-gradient(1200px 620px at 78% -8%, rgba(16, 163, 127, 0.08), transparent 60%),
-    var(--bg);
+  background: var(--body-bg);
+  background-attachment: fixed;
   color: var(--text);
-  font-family: var(--font-sans);
+  font-family: var(--font-ui);
   font-size: 15px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -98,8 +173,10 @@ a {
 }
 
 h1, h2, h3 {
+  font-family: var(--heading-family);
   font-weight: 650;
   letter-spacing: -0.02em;
+  text-transform: var(--heading-transform);
 }
 
 button:focus-visible,
@@ -238,9 +315,9 @@ dialog:focus-visible,
   gap: 18px;
   padding: 0 var(--page-x);
   border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
-  backdrop-filter: saturate(140%) blur(12px);
-  -webkit-backdrop-filter: saturate(140%) blur(12px);
+  background: var(--header-bg);
+  backdrop-filter: var(--header-blur);
+  -webkit-backdrop-filter: var(--header-blur);
 }
 
 .wordmark {
@@ -260,12 +337,13 @@ dialog:focus-visible,
   content: "";
   width: 18px;
   height: 18px;
-  border-radius: 50%;
-  background: conic-gradient(from 210deg, var(--accent), #35d0a3, var(--accent));
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  border-radius: var(--logo-radius);
+  background: var(--logo-bg);
+  box-shadow: var(--logo-shadow);
 }
 
-.wordmark-short {
+.wordmark-short,
+.wordmark-mini {
   display: none;
 }
 
@@ -325,6 +403,44 @@ dialog:focus-visible,
   display: none;
 }
 
+/* Theme toggle (OpenAI ⇄ ASCII) */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-pill);
+  background: var(--bg-2);
+}
+
+.theme-toggle button {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.theme-toggle button:hover {
+  color: var(--text);
+}
+
+.theme-toggle button.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--glow);
+}
+
+:root[data-theme="cyber"] .theme-toggle button.active {
+  color: var(--bg);
+}
+
 /* --------------------------------------------------------------------- Hero */
 
 .atlas-intro {
@@ -344,7 +460,7 @@ dialog:focus-visible,
   margin: 12px 0 0;
   font-size: clamp(34px, 6vw, 68px);
   font-weight: 680;
-  letter-spacing: -0.035em;
+  letter-spacing: var(--h1-tracking);
   line-height: 1.02;
 }
 
@@ -438,7 +554,7 @@ dialog:focus-visible,
 .download-section h2 {
   margin: 8px 0 0;
   font-size: clamp(22px, 2.6vw, 34px);
-  letter-spacing: -0.028em;
+  letter-spacing: var(--h2-tracking);
   line-height: 1.06;
 }
 
@@ -834,8 +950,8 @@ dialog:focus-visible,
   border: 1px solid var(--border-2);
   border-radius: var(--r);
   background: color-mix(in srgb, var(--surface) 96%, transparent);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: var(--overlay-blur);
+  -webkit-backdrop-filter: var(--overlay-blur);
   box-shadow: var(--shadow-3);
 }
 
@@ -1568,6 +1684,130 @@ dialog:focus-visible,
 }
 
 /* =========================================================================
+   ASCII + cyberpunk structural overrides
+   Same layout, terminal skin: dashed neon chips, +-- framed panels --+,
+   and uppercase [BRACKETED] mono actions.
+   ========================================================================= */
+
+:root[data-theme="cyber"] .date-chip,
+:root[data-theme="cyber"] .count-chip,
+:root[data-theme="cyber"] .live-status,
+:root[data-theme="cyber"] .header-filter {
+  border-style: dashed;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+:root[data-theme="cyber"] .live-status::before {
+  box-shadow: 0 0 8px var(--accent);
+}
+
+/* Uppercase, tightly-set, bracketed action buttons */
+:root[data-theme="cyber"] .toolbar-actions button,
+:root[data-theme="cyber"] .world-shortcuts button,
+:root[data-theme="cyber"] .event-inspector button,
+:root[data-theme="cyber"] .event-inspector a,
+:root[data-theme="cyber"] .index-record-actions button,
+:root[data-theme="cyber"] .load-more,
+:root[data-theme="cyber"] .download-row a,
+:root[data-theme="cyber"] .source-register a,
+:root[data-theme="cyber"] .dialog-frame button,
+:root[data-theme="cyber"] .dialog-frame a,
+:root[data-theme="cyber"] .search-results button,
+:root[data-theme="cyber"] .header-filter,
+:root[data-theme="cyber"] .command-rail .secondary-action,
+:root[data-theme="cyber"] .command-rail .rail-close {
+  gap: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+:root[data-theme="cyber"] .toolbar-actions button::before,
+:root[data-theme="cyber"] .world-shortcuts button::before,
+:root[data-theme="cyber"] .event-inspector button::before,
+:root[data-theme="cyber"] .event-inspector a::before,
+:root[data-theme="cyber"] .index-record-actions button::before,
+:root[data-theme="cyber"] .load-more::before,
+:root[data-theme="cyber"] .download-row a::before,
+:root[data-theme="cyber"] .source-register a::before,
+:root[data-theme="cyber"] .dialog-frame a::before,
+:root[data-theme="cyber"] .search-results button::before,
+:root[data-theme="cyber"] .header-filter::before,
+:root[data-theme="cyber"] .command-rail .secondary-action::before,
+:root[data-theme="cyber"] .command-rail .rail-close::before {
+  content: "[";
+}
+
+:root[data-theme="cyber"] .toolbar-actions button::after,
+:root[data-theme="cyber"] .world-shortcuts button::after,
+:root[data-theme="cyber"] .event-inspector button::after,
+:root[data-theme="cyber"] .event-inspector a::after,
+:root[data-theme="cyber"] .index-record-actions button::after,
+:root[data-theme="cyber"] .load-more::after,
+:root[data-theme="cyber"] .download-row a::after,
+:root[data-theme="cyber"] .source-register a::after,
+:root[data-theme="cyber"] .dialog-frame a::after,
+:root[data-theme="cyber"] .search-results button::after,
+:root[data-theme="cyber"] .header-filter::after,
+:root[data-theme="cyber"] .command-rail .secondary-action::after,
+:root[data-theme="cyber"] .command-rail .rail-close::after {
+  content: "]";
+}
+
+/* Dialog buttons: bracket the footer/action controls but not the × close */
+:root[data-theme="cyber"] .dialog-frame button:not(.dialog-header button)::before {
+  content: "[";
+}
+:root[data-theme="cyber"] .dialog-frame button:not(.dialog-header button)::after {
+  content: "]";
+}
+:root[data-theme="cyber"] .dialog-header button {
+  gap: 0;
+}
+
+/* Touch controls read like the original [UP] / [READ] pad */
+:root[data-theme="cyber"] .touch-controls__button::before,
+:root[data-theme="cyber"] .touch-controls__action::before {
+  content: "[";
+}
+:root[data-theme="cyber"] .touch-controls__button::after,
+:root[data-theme="cyber"] .touch-controls__action::after {
+  content: "]";
+}
+
+/* +-- framed terminal panels --+ */
+:root[data-theme="cyber"] .panel-label {
+  gap: 0;
+  color: var(--accent);
+}
+:root[data-theme="cyber"] .panel-label::before {
+  content: "+-- ";
+}
+:root[data-theme="cyber"] .panel-label::after {
+  content: " --+";
+}
+:root[data-theme="cyber"] .dialog-header span:first-child::before {
+  content: "+-- ";
+}
+
+/* Square terminal checkbox + neon glow accents */
+:root[data-theme="cyber"] .check-control span {
+  border-radius: 0;
+}
+:root[data-theme="cyber"] .eyebrow,
+:root[data-theme="cyber"] .live-status {
+  text-shadow: var(--glow);
+}
+:root[data-theme="cyber"] .event-dialog::backdrop {
+  background: rgba(2, 4, 6, 0.18);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+:root[data-theme="cyber"] .landmark-grid button::before {
+  box-shadow: 0 0 10px var(--family, var(--accent));
+}
+
+/* =========================================================================
    Responsive
    ========================================================================= */
 
@@ -1617,24 +1857,35 @@ dialog:focus-visible,
   }
 
   .site-header {
-    gap: 12px;
-    padding: 0 16px;
+    gap: 9px;
+    padding: 0 14px;
   }
 
   .wordmark {
+    gap: 8px;
     font-size: 14px;
   }
 
-  .wordmark-full {
+  .wordmark-full,
+  .wordmark-short {
     display: none;
   }
 
-  .wordmark-short {
+  .wordmark-mini {
     display: inline;
   }
 
+  /* The decorative baseline pill yields header room to the theme toggle. */
   .live-status {
-    padding: 5px 9px;
+    display: none;
+  }
+
+  .header-filter {
+    padding: 0 11px;
+  }
+
+  .theme-toggle button {
+    padding: 0 9px;
     font-size: 10px;
   }
 
@@ -1913,6 +2164,16 @@ dialog:focus-visible,
 
   .header-filter {
     display: inline-flex;
+  }
+
+  .live-status {
+    display: none;
+  }
+
+  .theme-toggle button {
+    min-height: 28px;
+    padding: 0 9px;
+    font-size: 10px;
   }
 
   .wordmark-full {

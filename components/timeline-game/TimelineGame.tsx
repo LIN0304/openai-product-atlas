@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import type { GameTheme } from "../../lib/game/renderer";
 import { buildWorldModel } from "../../lib/game/world-model";
 import { filterTimelineEvents, normalizeTimelineViewState } from "../../lib/timeline/search-index";
 import type { ExplorerDataset, ExplorerEvent, InitialViewState } from "../../lib/timeline/schema";
@@ -25,6 +26,24 @@ type TimelineGameProps = {
 };
 
 const VISITED_STORAGE_KEY = "atlas:game:v1:visited";
+const THEME_STORAGE_KEY = "atlas:theme";
+
+function isGameTheme(value: unknown): value is GameTheme {
+  return value === "openai" || value === "cyber";
+}
+
+function readTheme(): GameTheme {
+  if (typeof document !== "undefined" && isGameTheme(document.documentElement.dataset.theme)) {
+    return document.documentElement.dataset.theme as GameTheme;
+  }
+  try {
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (isGameTheme(stored)) return stored;
+  } catch {
+    // Fall through to the default theme when storage is blocked.
+  }
+  return "openai";
+}
 
 function readVisited(validIds: ReadonlySet<string>) {
   if (typeof window === "undefined") return new Set<string>();
@@ -63,6 +82,7 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
   const [status, setStatus] = useState("NOVA online · awaiting input");
   const [announcement, setAnnouncement] = useState("Interactive release map ready.");
   const [renderReady, setRenderReady] = useState(false);
+  const [theme, setTheme] = useState<GameTheme>("openai");
   const [reducedMotion, setReducedMotion] = useState<boolean | undefined>(undefined);
   const [copied, setCopied] = useState(false);
   const [pendingRoute, setPendingRoute] = useState<{ eventId: string; focus: boolean } | null>(
@@ -128,6 +148,7 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
     const frame = window.requestAnimationFrame(() => {
       setVisitedIds(readVisited(validIds));
       setVisitedLoaded(true);
+      setTheme(readTheme());
       updateMotion();
       updateDrawer();
     });
@@ -148,6 +169,19 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
       // The archive remains fully usable when storage is blocked.
     }
   }, [visitedIds, visitedLoaded]);
+
+  const applyTheme = useCallback((next: GameTheme) => {
+    setTheme(next);
+    document.documentElement.dataset.theme = next;
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, next);
+    } catch {
+      // Preference simply will not persist when storage is blocked.
+    }
+    setAnnouncement(next === "cyber"
+      ? "Switched to ASCII cyberpunk theme."
+      : "Switched to OpenAI theme.");
+  }, []);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -384,6 +418,7 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
         <a className="wordmark" href="#top" aria-label="OpenAI Product Atlas home">
           <span className="wordmark-full">OpenAI Product Atlas</span>
           <span className="wordmark-short">Product Atlas</span>
+          <span className="wordmark-mini">Atlas</span>
         </a>
         <nav aria-label="Primary navigation">
           <a className={view === "map" ? "active" : ""} aria-current={view === "map" ? "page" : undefined} href="#world" onClick={(event) => { event.preventDefault(); navigateView("map"); }}>Explore</a>
@@ -392,6 +427,10 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
           <a href="#downloads">Downloads</a>
         </nav>
         <button className="header-filter" type="button" aria-expanded={filtersOpen} onClick={openFilters}>Filters</button>
+        <div className="theme-toggle" role="group" aria-label="Visual theme">
+          <button type="button" className={theme === "openai" ? "active" : ""} aria-pressed={theme === "openai"} onClick={() => applyTheme("openai")}>OpenAI</button>
+          <button type="button" className={theme === "cyber" ? "active" : ""} aria-pressed={theme === "cyber"} onClick={() => applyTheme("cyber")}>ASCII</button>
+        </div>
         <span className="live-status">Baseline v0.1</span>
       </header>
 
@@ -473,6 +512,7 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
               visitedEventIds={visitedIds}
               paused={dialogOpen}
               reducedMotion={reducedMotion}
+              theme={theme}
               onArrival={handleArrival}
               onSelect={({ eventId, reason }) => {
                 setSelectedId(eventId);

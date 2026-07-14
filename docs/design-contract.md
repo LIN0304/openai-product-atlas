@@ -1,5 +1,26 @@
 # OpenAI Product Atlas: approved implementation contract
 
+## Themes (2026-07-14 update)
+
+The experience now ships **two switchable skins over one shared layout**, chosen
+by a header toggle and persisted to `localStorage` (`atlas:theme`, applied
+before paint to avoid a flash):
+
+- **OpenAI mode (default):** OpenAI's clean visual language — neutral near-black
+  surfaces with a single green accent, a sans/mono type pairing, rounded chrome,
+  soft depth, and a calm canvas (a green "you-are-here" marker, quiet grid).
+- **ASCII mode:** the restrained-cyberpunk, ASCII-first look specified below —
+  neon palette, square corners, mono uppercase, `[BRACKETED]` actions,
+  `+-- framed --+` panels, the ASCII `@` / `/|\` NOVA, and `...> WAYPOINT`.
+
+The **ASCII + color grammar** and the interaction, responsive, accessibility,
+and release-gate sections below remain the contract for **ASCII mode**. OpenAI
+mode intentionally departs from the palette/square-corner/no-gradient rules
+while preserving the same layout, semantics, ASCII station grammar, keyboard and
+touch model, live regions, semantic index, and reduced-motion behavior. Both
+modes keep the mobile fixes (touch controls no longer overlap the map caveat;
+the record opens as a centered/bottom-sheet modal).
+
 ## Approval
 
 - Approved by the user on 2026-07-13.

@@ -14,8 +14,10 @@ import {
   fitWorldCamera,
   nearestStationAtScreenPoint,
   resizeCanvas,
+  setRendererTheme,
   stationPassesLevelOfDetail,
   type CanvasMetrics,
+  type GameTheme,
 } from "./renderer";
 import type { CameraTransform } from "./transforms";
 import type { Point, TimelineStation, WorldModel } from "./world-model";
@@ -312,6 +314,12 @@ export class CanvasGameController {
       this.pressedKeys.clear();
       this.heldDirections.clear();
     }
+    this.dynamicDirty = true;
+  }
+
+  setTheme(theme: GameTheme): void {
+    setRendererTheme(theme);
+    this.staticDirty = true;
     this.dynamicDirty = true;
   }
 
