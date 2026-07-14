@@ -28,45 +28,45 @@ export function FilterPanel(props: FilterPanelProps) {
       aria-hidden={props.inactive || undefined}
       inert={props.inactive || undefined}
     >
-      <div className="panel-label">+-- MISSION CONTROL --------------+</div>
-      <button className="rail-close" type="button" onClick={props.onClose}>[CLOSE]</button>
+      <div className="panel-label">Filters</div>
+      <button className="rail-close" type="button" onClick={props.onClose}>Close</button>
 
       <label className="terminal-field">
-        <span>SEARCH EVENTS [/]</span>
-        <span className="input-wrap"><b aria-hidden="true">&gt;</b><input id="atlas-search" type="search" value={props.query} onChange={(event) => props.onQuery(event.target.value)} placeholder="GPT-4o, Codex, Voice..." /></span>
+        <span>Search events</span>
+        <span className="input-wrap"><b aria-hidden="true">⌕</b><input id="atlas-search" type="search" value={props.query} onChange={(event) => props.onQuery(event.target.value)} placeholder="GPT-4o, Codex, Voice…" /></span>
       </label>
 
       <label className="select-field">
-        <span>YEAR</span>
+        <span>Year</span>
         <select value={props.year} onChange={(event) => props.onYear(event.target.value)}>
-          <option value="all">ALL YEARS</option>
+          <option value="all">All years</option>
           {props.years.map((value) => <option value={String(value)} key={value}>{value}</option>)}
         </select>
       </label>
 
       <fieldset className="family-filter">
-        <legend>PRODUCT FAMILIES</legend>
+        <legend>Product families</legend>
         <button type="button" aria-label="Show all product families" aria-pressed={props.family === "all"} className={props.family === "all" ? "active" : ""} onClick={() => props.onFamily("all")}>
-          <span>[*]</span><span>ALL FAMILIES</span><b>{props.families.length}</b>
+          <span aria-hidden="true">✳</span><span>All families</span><b>{props.families.length}</b>
         </button>
         {props.families.map((item) => (
           <button type="button" aria-label={`Filter by ${item.name_en}`} aria-pressed={props.family === item.id} className={props.family === item.id ? "active" : ""} key={item.id} onClick={() => props.onFamily(item.id)}>
-            <span style={{ color: item.color }}>[{item.glyph}]</span><span>{item.name_en}</span><b>L{String(item.lane + 1).padStart(2, "0")}</b>
+            <span aria-hidden="true" style={{ color: item.color }}>{item.glyph}</span><span>{item.name_en}</span><b>L{String(item.lane + 1).padStart(2, "0")}</b>
           </button>
         ))}
       </fieldset>
 
       <label className="check-control">
         <input type="checkbox" checked={props.landmarksOnly} onChange={(event) => props.onLandmarksOnly(event.target.checked)} />
-        <span aria-hidden="true">[{props.landmarksOnly ? "x" : " "}]</span>
-        <b>LANDMARKS ONLY</b>
+        <span aria-hidden="true">✓</span>
+        <b>Landmarks only</b>
       </label>
 
       <div className="rail-status">
-        <span>VISIBLE SIGNALS</span>
-        <strong>{String(props.resultCount).padStart(3, "0")}</strong>
+        <span>Visible</span>
+        <strong>{props.resultCount}</strong>
       </div>
-      <button className="secondary-action" type="button" onClick={props.onReset}>[RESET FILTERS]</button>
+      <button className="secondary-action" type="button" onClick={props.onReset}>Reset filters</button>
     </aside>
   );
 }

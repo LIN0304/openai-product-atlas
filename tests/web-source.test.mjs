@@ -51,13 +51,13 @@ test("ships an English native-web timeline game with an accessible HTML path", a
   expectMatch(layout, /OpenAI Product Atlas/i, "metadata must name the finished product");
   expectMatch(uiSource, /OPENAI PRODUCT ATLAS/i, "the product wordmark must be visible");
   expectMatch(uiSource, /NOVA/, "the playable character must be named NOVA");
-  expectMatch(uiSource, /OPEN NOW/, "the semantic archive must offer a direct-open path");
-  expectMatch(uiSource, /OPEN OFFICIAL SOURCE/, "event records must link to official sources");
+  expectMatch(uiSource, /aria-label=\{`Open \$\{event\.title_en\}`\}/, "the semantic archive must offer a direct-open path");
+  expectMatch(uiSource, /Open official source/i, "event records must link to official sources");
   expectMatch(uiSource, /<canvas\b/, "the native timeline world must render on Canvas2D");
   expectMatch(uiSource, /role=["']group["']/, "the game stage must expose a labeled group");
   expectMatch(uiSource, /aria-live=["']polite["']/, "arrival changes must use a polite live region");
   expectMatch(uiSource, /TouchControls/, "the mobile game must include explicit touch controls");
-  expectMatch(uiSource, /READ/, "the non-pointer read action must remain visible");
+  expectMatch(uiSource, /onRead\b|>Read</, "the non-pointer read action must remain visible");
   expectNoMatch(uiSource, /[\u3400-\u9fff]/, "visible app/components source must remain English-only");
 
   expectMatch(css, /prefers-reduced-motion\s*:\s*reduce/, "CSS must provide a reduced-motion mode");

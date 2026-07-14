@@ -74,7 +74,7 @@ function DirectionButton({ direction, label, shortLabel, disabled, onMove }: Dir
       onBlur={() => stop()}
       onClick={handleClick}
     >
-      [{shortLabel}]
+      <span aria-hidden="true">{shortLabel}</span>
     </button>
   );
 }
@@ -83,19 +83,19 @@ export function TouchControls({ onMove, onRead, onMap, disabled = false, classNa
   return (
     <div className={className ? `touch-controls ${className}` : "touch-controls"} aria-label="NOVA movement controls">
       <div className="touch-controls__pad">
-        <DirectionButton direction="up" label="Move NOVA up" shortLabel="UP" disabled={disabled} onMove={onMove} />
-        <DirectionButton direction="left" label="Move NOVA left" shortLabel="LT" disabled={disabled} onMove={onMove} />
-        <span className="touch-controls__center" aria-hidden="true">&lt; + &gt;</span>
-        <DirectionButton direction="right" label="Move NOVA right" shortLabel="RT" disabled={disabled} onMove={onMove} />
-        <DirectionButton direction="down" label="Move NOVA down" shortLabel="DN" disabled={disabled} onMove={onMove} />
+        <DirectionButton direction="up" label="Move NOVA up" shortLabel="↑" disabled={disabled} onMove={onMove} />
+        <DirectionButton direction="left" label="Move NOVA left" shortLabel="←" disabled={disabled} onMove={onMove} />
+        <span className="touch-controls__center" aria-hidden="true">◈</span>
+        <DirectionButton direction="right" label="Move NOVA right" shortLabel="→" disabled={disabled} onMove={onMove} />
+        <DirectionButton direction="down" label="Move NOVA down" shortLabel="↓" disabled={disabled} onMove={onMove} />
       </div>
       <div className="touch-controls__actions">
         <button className="touch-controls__action touch-controls__action--read" type="button" disabled={disabled} onClick={onRead}>
-          [READ]
+          Read
         </button>
         {onMap && (
           <button className="touch-controls__action touch-controls__action--map" type="button" disabled={disabled} onClick={onMap}>
-            [MAP]
+            Fit map
           </button>
         )}
       </div>

@@ -58,8 +58,8 @@ export function EventDialog({ events, activeIndex, family, open, onClose, onStep
     >
       <div className="dialog-frame">
         <header className="dialog-header">
-          <span>+-- NODE DECODED // {family?.region.toUpperCase() ?? event.map_region.toUpperCase()}</span>
-          <button type="button" onClick={onClose} aria-label="Close event record">[X]</button>
+          <span>Node decoded · {family?.region ?? event.map_region}</span>
+          <button type="button" onClick={onClose} aria-label="Close event record">×</button>
         </header>
 
         <div className="dialog-body">
@@ -67,35 +67,35 @@ export function EventDialog({ events, activeIndex, family, open, onClose, onStep
             <time dateTime={event.date}>{formatDate(event.date)}</time>
             <span>{event.event_id}</span>
           </div>
-          <p className="eyebrow">{family?.glyph ?? event.glyph} {family?.name_en.toUpperCase() ?? event.product_family.toUpperCase()} / {humanize(event.event_type)}</p>
+          <p className="eyebrow"><span aria-hidden="true" style={{ color: family?.color ?? event.color }}>{family?.glyph ?? event.glyph}</span> {family?.name_en ?? event.product_family} · {humanize(event.event_type)}</p>
           <h2 id="event-dialog-title">{event.title_en}</h2>
           <p id="event-dialog-summary" className="event-summary">{event.summary_en}</p>
 
           <dl className="event-facts">
-            <div><dt>PRODUCT</dt><dd>{event.product}</dd></div>
-            <div><dt>LIFECYCLE</dt><dd>{humanize(event.lifecycle)}</dd></div>
-            <div><dt>NODE TIER</dt><dd>{event.node_tier.toUpperCase()} / {event.importance}</dd></div>
-            <div><dt>CONFIDENCE</dt><dd>{event.confidence.toUpperCase()}</dd></div>
-            <div><dt>SOURCE GROUP</dt><dd>{event.source_name}</dd></div>
-            <div><dt>CORROBORATION</dt><dd>{event.source_refs.length} OFFICIAL REF{event.source_refs.length === 1 ? "" : "S"}</dd></div>
+            <div><dt>Product</dt><dd>{event.product}</dd></div>
+            <div><dt>Lifecycle</dt><dd>{humanize(event.lifecycle)}</dd></div>
+            <div><dt>Node tier</dt><dd>{event.node_tier.toUpperCase()} · {event.importance}</dd></div>
+            <div><dt>Confidence</dt><dd>{event.confidence.toUpperCase()}</dd></div>
+            <div><dt>Source group</dt><dd>{event.source_name}</dd></div>
+            <div><dt>Corroboration</dt><dd>{event.source_refs.length} official ref{event.source_refs.length === 1 ? "" : "s"}</dd></div>
           </dl>
 
           <a className="primary-action" href={event.source_url} target="_blank" rel="noreferrer">
-            [OPEN OFFICIAL SOURCE]
+            Open official source ↗
           </a>
 
           {events.length > 1 && (
             <div className="station-pagination" aria-label="Events at this station">
-              <button type="button" onClick={() => onStep((activeIndex - 1 + events.length) % events.length)}>[PREV]</button>
-              <span>RECORD {activeIndex + 1} / {events.length}</span>
-              <button type="button" onClick={() => onStep((activeIndex + 1) % events.length)}>[NEXT]</button>
+              <button type="button" onClick={() => onStep((activeIndex - 1 + events.length) % events.length)}>← Prev</button>
+              <span>Record {activeIndex + 1} / {events.length}</span>
+              <button type="button" onClick={() => onStep((activeIndex + 1) % events.length)}>Next →</button>
             </div>
           )}
         </div>
 
         <footer className="dialog-footer">
-          <span>ARRIVAL LATCHED // EXIT STATION TO REARM</span>
-          <button type="button" onClick={onClose}>[CONTINUE]</button>
+          <span>Arrival latched — exit the station to re-arm</span>
+          <button type="button" onClick={onClose}>Continue</button>
         </footer>
       </div>
     </dialog>

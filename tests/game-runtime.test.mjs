@@ -31,7 +31,7 @@ test("renderer preserves the approved ASCII state grammar and bounded mobile DPR
   assert.match(renderer, /`\[\$\{station\.glyph\}\]\+`/);
   assert.match(renderer, /coarsePointer \? 1\.5 : 2/);
   assert.match(renderer, /const MIN_ZOOM = 0\.075/);
-  assert.match(renderer, /"\.\.\.> WAYPOINT"/);
+  assert.match(renderer, /"→ waypoint"/);
   assert.match(renderer, /camera\.zoom >= 0\.28 \|\| station\.tier === "landmark"/);
   assert.match(renderer, /visibleStationIds\.has\(route\.stationIds\[index - 1\]/);
 });

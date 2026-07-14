@@ -16,6 +16,7 @@ import {
   type GameSelectionPayload,
   type MoveDirection,
 } from "../../lib/game/controller";
+import type { GameTheme } from "../../lib/game/renderer";
 import type { WorldModel } from "../../lib/game/world-model";
 
 export interface GameStageHandle {
@@ -35,6 +36,7 @@ export interface GameStageProps {
   readonly paused?: boolean;
   readonly focusNonce?: number;
   readonly reducedMotion?: boolean;
+  readonly theme?: GameTheme;
   readonly className?: string;
   readonly onArrival?: (payload: GameArrivalPayload) => void;
   readonly onSelect?: (payload: GameSelectionPayload) => void;
@@ -60,6 +62,7 @@ export const GameStage = forwardRef<GameStageHandle, GameStageProps>(function Ga
     paused = false,
     focusNonce,
     reducedMotion,
+    theme,
     className,
     onArrival,
     onSelect,
@@ -148,6 +151,7 @@ export const GameStage = forwardRef<GameStageHandle, GameStageProps>(function Ga
     controller.setSelectedEventId(selectedEventId);
     controller.setPaused(paused);
     controller.setReducedMotion(reducedMotion ?? motionMedia.matches);
+    controller.setTheme(theme ?? "openai");
     resize();
     syncActivity();
     controller.start();
@@ -197,6 +201,10 @@ export const GameStage = forwardRef<GameStageHandle, GameStageProps>(function Ga
   useEffect(() => {
     controllerRef.current?.setPaused(paused);
   }, [paused]);
+
+  useEffect(() => {
+    if (theme) controllerRef.current?.setTheme(theme);
+  }, [theme]);
 
   useEffect(() => {
     const controller = controllerRef.current;
@@ -252,7 +260,7 @@ export const GameStage = forwardRef<GameStageHandle, GameStageProps>(function Ga
         >
           {fallback}
         </canvas>
-        {!renderReady && <div className="game-stage__boot" aria-hidden="true">&gt;_ BUILDING TIMELINE TOPOLOGY...</div>}
+        {!renderReady && <div className="game-stage__boot" aria-hidden="true">Building timeline topology…</div>}
       </div>
       <output className="game-stage__live sr-only" aria-live="polite" aria-atomic="true">
         {liveText}

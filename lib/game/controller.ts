@@ -14,8 +14,10 @@ import {
   fitWorldCamera,
   nearestStationAtScreenPoint,
   resizeCanvas,
+  setRendererTheme,
   stationPassesLevelOfDetail,
   type CanvasMetrics,
+  type GameTheme,
 } from "./renderer";
 import type { CameraTransform } from "./transforms";
 import type { Point, TimelineStation, WorldModel } from "./world-model";
@@ -283,7 +285,7 @@ export class CanvasGameController {
     this.visibleStationIds = stationIdsForVisibleEvents(this.world, this.visibleEventIds);
     if (this.waypointStationId && !this.visibleStationIds.has(this.waypointStationId)) {
       this.waypointStationId = null;
-      this.callbacks.onStatus?.("ROUTE CANCELLED // SIGNAL FILTERED OUT");
+      this.callbacks.onStatus?.("Route cancelled · signal filtered out");
     }
     if (this.hoveredStationId && !this.visibleStationIds.has(this.hoveredStationId)) {
       this.hoveredStationId = null;
@@ -312,6 +314,12 @@ export class CanvasGameController {
       this.pressedKeys.clear();
       this.heldDirections.clear();
     }
+    this.dynamicDirty = true;
+  }
+
+  setTheme(theme: GameTheme): void {
+    setRendererTheme(theme);
+    this.staticDirty = true;
     this.dynamicDirty = true;
   }
 
@@ -350,7 +358,7 @@ export class CanvasGameController {
     if (this.reducedMotion) this.camera = next;
     this.staticDirty = true;
     this.dynamicDirty = true;
-    this.callbacks.onStatus?.("MAP FIT // FULL TIMELINE VISIBLE");
+    this.callbacks.onStatus?.("Map fit · full timeline visible");
   }
 
   zoomBy(factor: number): void {
@@ -369,7 +377,7 @@ export class CanvasGameController {
     const stationId = this.world.eventToStationId.get(eventId);
     const station = stationId ? this.world.stationById.get(stationId) : undefined;
     if (!station || !this.visibleStationIds.has(station.id) || !this.visibleEventIds.has(eventId)) {
-      this.callbacks.onStatus?.("ROUTE BLOCKED // EVENT IS NOT VISIBLE");
+      this.callbacks.onStatus?.("Route blocked · event is not visible");
       return false;
     }
     return this.startRoute(station, eventId, "route");
@@ -399,7 +407,7 @@ export class CanvasGameController {
       y: this.player.y,
       zoom: Math.max(this.targetCamera.zoom, 0.58),
     };
-    this.callbacks.onStatus?.(`WAYPOINT SET // ${station.date} // ${station.mapRegion.toUpperCase()}`);
+    this.callbacks.onStatus?.(`Waypoint set · ${station.date} · ${station.mapRegion}`);
     this.staticDirty = true;
     this.dynamicDirty = true;
     return true;
@@ -408,11 +416,11 @@ export class CanvasGameController {
   openNearest(): string | undefined {
     const nearest = this.nearestVisibleStation();
     if (!nearest || nearest.distance > READ_RADIUS) {
-      this.callbacks.onStatus?.("NO SIGNAL IN RANGE // MOVE CLOSER OR USE ROUTE");
+      this.callbacks.onStatus?.("No node in range · move closer or use Route");
       return undefined;
     }
     if (this.arrivalState.latchedStationId === nearest.station.id) {
-      this.callbacks.onStatus?.("STATION LATCHED // EXIT THE NODE TO READ AGAIN");
+      this.callbacks.onStatus?.("Station latched · exit the node to read again");
       return undefined;
     }
     const eventId = firstVisibleEventId(nearest.station, this.visibleEventIds);
@@ -616,7 +624,7 @@ export class CanvasGameController {
   private cancelWaypoint(): void {
     if (!this.waypointStationId) return;
     this.waypointStationId = null;
-    this.callbacks.onStatus?.("MANUAL OVERRIDE // WAYPOINT CANCELLED");
+    this.callbacks.onStatus?.("Manual override · waypoint cancelled");
     this.dynamicDirty = true;
   }
 

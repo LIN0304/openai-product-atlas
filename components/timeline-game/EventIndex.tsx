@@ -33,10 +33,10 @@ export function EventIndex({ events, families, selectedEventId, onRoute, onOpen 
     <section className="archive-index" id="event-index" aria-labelledby="index-title">
       <div className="section-title-row">
         <div>
-          <p className="eyebrow">02 // SEMANTIC ARCHIVE</p>
-          <h2 id="index-title">ALL EVENTS, WITHOUT THE MAP</h2>
+          <p className="eyebrow">02 · Semantic archive</p>
+          <h2 id="index-title">All events, without the map</h2>
         </div>
-        <span className="count-chip">{events.length} MATCHING RECORDS</span>
+        <span className="count-chip">{events.length} matching records</span>
       </div>
 
       <div className="index-table" role="list">
@@ -52,18 +52,18 @@ export function EventIndex({ events, families, selectedEventId, onRoute, onOpen 
                 <p>{family?.glyph ?? event.glyph} {family?.name_en ?? event.map_region} / {event.product}</p>
               </div>
               <div className="index-record-actions">
-                <button type="button" onClick={() => onRoute(event)} aria-label={`Route NOVA to ${event.title_en}`}>[ROUTE]</button>
-                <button type="button" onClick={() => onOpen(event)} aria-label={`Open ${event.title_en}`}>[OPEN NOW]</button>
+                <button type="button" onClick={() => onRoute(event)} aria-label={`Route NOVA to ${event.title_en}`}>Route</button>
+                <button type="button" className="primary-action" onClick={() => onOpen(event)} aria-label={`Open ${event.title_en}`}>Open</button>
               </div>
             </article>
           );
         })}
-        {!events.length && <p className="empty-state">NO SIGNAL // TRY A DIFFERENT SEARCH OR FILTER.</p>}
+        {!events.length && <p className="empty-state">No match — try a different search or filter.</p>}
       </div>
 
       {visibleLimit < events.length && (
         <button className="load-more" type="button" onClick={() => setLimit(visibleLimit + PAGE_SIZE)}>
-          [LOAD {Math.min(PAGE_SIZE, events.length - visibleLimit)} MORE]
+          Load {Math.min(PAGE_SIZE, events.length - visibleLimit)} more
         </button>
       )}
     </section>

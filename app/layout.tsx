@@ -22,10 +22,19 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#05070b",
+  themeColor: "#0d0d0d",
   colorScheme: "dark",
 };
 
+const themeScript = `(function(){try{var t=localStorage.getItem("atlas:theme");document.documentElement.dataset.theme=(t==="openai"||t==="cyber")?t:"openai";}catch(e){document.documentElement.dataset.theme="openai";}})();`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return (
+    <html lang="en" data-theme="openai">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body>{children}</body>
+    </html>
+  );
 }
