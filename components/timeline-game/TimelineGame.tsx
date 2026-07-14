@@ -14,6 +14,7 @@ import {
 } from "../../lib/timeline/view-state";
 import { EventDialog } from "./EventDialog";
 import { EventIndex } from "./EventIndex";
+import { AnalysisDashboard } from "../analysis/AnalysisDashboard";
 import { EventInspector } from "./EventInspector";
 import { FilterPanel } from "./FilterPanel";
 import { GameStage, type GameStageHandle } from "./GameStage";
@@ -76,7 +77,7 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
   const [year, setYear] = useState(initialView.year);
   const [landmarksOnly, setLandmarksOnly] = useState(initialView.landmarksOnly);
   const [selectedId, setSelectedId] = useState(initialView.selectedId);
-  const [view, setView] = useState<"map" | "index">(initialView.view);
+  const [view, setView] = useState<"map" | "index" | "analysis">(initialView.view);
   const [visitedIds, setVisitedIds] = useState<Set<string>>(() => new Set());
   const [visitedLoaded, setVisitedLoaded] = useState(false);
   const [dialogEvents, setDialogEvents] = useState<readonly ExplorerEvent[]>([]);
@@ -346,7 +347,11 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
       setDialogOpen(false);
       setDialogEvents([]);
       setFiltersOpen(false);
-      setStatus(next.view === "index" ? "Index online · history restored" : "NOVA online · history restored");
+      setStatus(next.view === "index"
+        ? "Index online · history restored"
+        : next.view === "analysis"
+          ? "Analysis online · history restored"
+          : "NOVA online · history restored");
       const routeEventId = timelineRouteEventFromHistory(window.history.state, parsed.selectedId, validIds);
       setPendingRoute(next.view === "map" && routeEventId
         ? { eventId: routeEventId, focus: false }
@@ -354,7 +359,7 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
       window.setTimeout(() => {
         const target = next.view === "index" && next.selectedId
           ? document.getElementById(`event-${next.selectedId}`)
-          : document.getElementById(next.view === "index" ? "event-index" : "world");
+          : document.getElementById(next.view === "index" ? "event-index" : next.view === "analysis" ? "analysis" : "world");
         target?.scrollIntoView();
       }, 0);
     };
@@ -563,12 +568,13 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
     setFiltersOpen(true);
   }, []);
 
-  const navigateView = useCallback((nextView: "map" | "index") => {
+  const navigateView = useCallback((nextView: "map" | "index" | "analysis") => {
     setView(nextView);
-    writeUrl("push", { view: nextView }, nextView === "index" ? "#event-index" : "#world");
+    const hash = nextView === "index" ? "#event-index" : nextView === "analysis" ? "#analysis" : "#world";
+    writeUrl("push", { view: nextView }, hash);
     const target = nextView === "index" && selectedEvent
       ? document.getElementById(`event-${selectedEvent.event_id}`)
-      : document.getElementById(nextView === "index" ? "event-index" : "world");
+      : document.getElementById(nextView === "index" ? "event-index" : nextView === "analysis" ? "analysis" : "world");
     target?.scrollIntoView();
   }, [selectedEvent, writeUrl]);
 
@@ -593,6 +599,7 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
         <nav aria-label="Primary navigation">
           <a className={view === "map" ? "active" : ""} aria-current={view === "map" ? "page" : undefined} href="#world" onClick={(event) => { event.preventDefault(); navigateView("map"); }}>Explore</a>
           <a className={view === "index" ? "active" : ""} aria-current={view === "index" ? "page" : undefined} href="#event-index" onClick={(event) => { event.preventDefault(); navigateView("index"); }}>Event index</a>
+          <a className={view === "analysis" ? "active" : ""} aria-current={view === "analysis" ? "page" : undefined} href="#analysis" onClick={(event) => { event.preventDefault(); navigateView("analysis"); }}>Analysis</a>
           <a href="#methodology">Methodology</a>
           <a href="#downloads">Downloads</a>
         </nav>
@@ -751,6 +758,9 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
       </section>
 
       <EventIndex events={filteredEvents} families={initialData.taxonomy} selectedEventId={selectedEvent?.event_id ?? ""} onRoute={routeTo} onOpen={openRecord} />
+
+      <AnalysisDashboard dataset={initialData} onOpenEvent={(eventId) => { const event = eventById.get(eventId); if (event) routeTo(event); }} />
+
 
       <section className="method-section" id="methodology" aria-labelledby="method-title">
         <div className="section-title-row">

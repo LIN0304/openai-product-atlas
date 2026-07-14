@@ -62,7 +62,7 @@ export function parseTimelineViewState(
   const year = params.get("year") ?? "";
   const event = params.get("event") ?? "";
   const rawView = params.get("view");
-  const view: TimelineViewMode = rawView === "index" ? "index" : "map";
+  const view: TimelineViewMode = rawView === "index" ? "index" : rawView === "analysis" ? "analysis" : "map";
 
   return {
     query: cleanQuery(params.get("q") ?? ""),
