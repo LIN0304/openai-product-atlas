@@ -157,14 +157,20 @@ export function ReleaseCadenceChart({ dataset }: { dataset: ExplorerDataset }) {
         {width > 0 && (
           <svg className="cadence-svg" width={width} height={height} role="img"
             aria-label={`Stacked area of releases per ${granularity} by product family, ${model.buckets.length} buckets. Peak ${model.peak.value} in ${model.peak.bucketKey}.`}>
-            {/* Era annotation bands */}
-            {eraBands.map((band, i) => (
-              <g key={band.era}>
-                <rect className={`era-band ${i % 2 === 0 ? "era-a" : "era-b"}`}
-                  x={x(band.startDay)} y={MARGIN.top} width={Math.max(0, x(band.endDay) - x(band.startDay))} height={plotH} />
-                <text className="era-name" x={x(band.startDay) + 4} y={MARGIN.top - 9}>{band.era}</text>
-              </g>
-            ))}
+            {/* Era annotation bands. The label is drawn only when it fits its
+                band, so narrow early eras don't collide with their neighbour. */}
+            {eraBands.map((band, i) => {
+              const bandW = Math.max(0, x(band.endDay) - x(band.startDay));
+              return (
+                <g key={band.era}>
+                  <rect className={`era-band ${i % 2 === 0 ? "era-a" : "era-b"}`}
+                    x={x(band.startDay)} y={MARGIN.top} width={bandW} height={plotH} />
+                  {bandW > band.era.length * 6.2 && (
+                    <text className="era-name" x={x(band.startDay) + 4} y={MARGIN.top - 9}>{band.era}</text>
+                  )}
+                </g>
+              );
+            })}
 
             {/* Y grid + ticks (hidden in stream mode where the count axis is meaningless) */}
             {!prefersStream && yTicks.map((tick) => (

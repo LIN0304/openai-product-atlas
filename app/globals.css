@@ -2786,6 +2786,10 @@ dialog:focus-visible,
 
 .analysis-stack {
   display: grid;
+  /* minmax(0,1fr) keeps the column at the container width so a fixed-width
+     chart (the heatmap) scrolls inside its .svg-scroll instead of stretching
+     the card past the viewport. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 
@@ -2879,6 +2883,22 @@ dialog:focus-visible,
   font-weight: 600;
 }
 
+.table-link {
+  padding: 2px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--accent-text);
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.table-link:hover {
+  color: var(--text);
+}
+
 /* Horizontal scroll wrapper for time-dense charts (never scrolls the body) */
 
 .svg-scroll {
@@ -2969,7 +2989,7 @@ dialog:focus-visible,
 /* Family heatmap */
 
 .heatmap-wrap { position: relative; }
-.heatmap-svg { display: block; min-width: 620px; }
+.heatmap-svg { display: block; }
 .heat-year { font-family: var(--font-mono); font-size: 10px; font-weight: 700; }
 .heat-swatch { border-radius: 0; }
 .heat-glyph { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
@@ -2979,7 +2999,18 @@ dialog:focus-visible,
 .heat-cell { transition: opacity 120ms ease; }
 .heat-cell.empty { stroke: var(--border); stroke-width: 1; }
 .heat-cell.peak { stroke: var(--focus); stroke-width: 2; }
-.heat-value { font-family: var(--font-mono); font-size: 10px; pointer-events: none; }
+/* A surface-coloured halo keeps the numeral legible on any cell intensity in
+   both skins, sidestepping the mid-tone contrast trap. */
+.heat-value {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  pointer-events: none;
+  fill: var(--text);
+  stroke: var(--bg);
+  stroke-width: 2.4px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
 .heat-row.dim { opacity: 0.38; }
 .heat-row.lit .heat-name { fill: var(--accent-text); }
 
@@ -3009,7 +3040,7 @@ dialog:focus-visible,
 
 .breakdowns-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
 }
 

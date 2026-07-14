@@ -411,11 +411,13 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
   }, [dialogOpen, filtersOpen, immersive, exitImmersive, toggleImmersive]);
 
   useEffect(() => {
-    if (initialView.view !== "index") return;
+    if (initialView.view === "map") return;
     const frame = window.requestAnimationFrame(() => {
-      const target = initialView.selectedId
-        ? document.getElementById(`event-${initialView.selectedId}`)
-        : document.getElementById("event-index");
+      const target = initialView.view === "analysis"
+        ? document.getElementById("analysis")
+        : initialView.selectedId
+          ? document.getElementById(`event-${initialView.selectedId}`)
+          : document.getElementById("event-index");
       target?.scrollIntoView();
     });
     return () => window.cancelAnimationFrame(frame);

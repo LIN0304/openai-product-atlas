@@ -67,7 +67,13 @@ export function ModelLineageChart({ dataset, onOpenEvent }: { dataset: ExplorerD
         {model.lanes.flatMap((lane) =>
           lane.nodes.map((node) => (
             <tr key={node.eventId}>
-              <td>{lane.label}</td><td>{node.product}</td><td>{node.date}</td><td>{node.tier}</td>
+              <td>{lane.label}</td>
+              <td>
+                {onOpenEvent
+                  ? <button type="button" className="table-link" onClick={() => onOpenEvent(node.eventId)}>{node.product}</button>
+                  : node.product}
+              </td>
+              <td>{node.date}</td><td>{node.tier}</td>
             </tr>
           )),
         )}

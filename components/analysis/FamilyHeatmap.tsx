@@ -6,12 +6,11 @@ import type { ExplorerDataset } from "../../lib/timeline/schema";
 import { computeFamilyHeatmap, heatIntensityPct } from "../../lib/analysis/heatmap";
 import { ChartCard } from "./ChartCard";
 import { useAnalysisScope } from "./AnalysisScope";
+import { useElementWidth } from "./hooks";
 import { Tooltip, type TooltipState } from "./Tooltip";
 
-const LG = 172;
+const LG = 178;
 const HEADER = 44;
-const CELL = 34;
-const STEP = CELL + 2;
 
 function cellFill(value: number, max: number): string {
   if (value <= 0) return "var(--surface)";
@@ -25,15 +24,18 @@ export function FamilyHeatmap({ dataset }: { dataset: ExplorerDataset }) {
     [dataset.events, dataset.taxonomy, granularity],
   );
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+  const [scrollRef, avail] = useElementWidth<HTMLDivElement>();
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const cols = model.columns.length;
-  const plotW = cols * STEP;
+  // Fixed-size square cells: fill the card on wide screens, scroll on narrow.
+  const cellSize = avail > 0 ? Math.max(26, Math.min(44, Math.floor((avail - LG - 8) / cols))) : 34;
+  const step = cellSize + 2;
+  const plotW = cols * step;
   const width = LG + plotW + 6;
-  const rowsH = model.rows.length * STEP;
+  const rowsH = model.rows.length * step;
   const height = HEADER + rowsH;
 
-  // Locate the single busiest cell for the "peak" marker.
   let peak = { row: -1, col: -1, value: 0 };
   model.rows.forEach((row, r) =>
     row.cells.forEach((cell) => {
@@ -75,75 +77,54 @@ export function FamilyHeatmap({ dataset }: { dataset: ExplorerDataset }) {
       table={table}
       className="dash-card--heatmap"
     >
-      <div className="svg-scroll">
+      <div className="svg-scroll" ref={scrollRef}>
         <div className="heatmap-wrap" ref={wrapRef} onPointerLeave={() => setTooltip(null)}>
           <svg
             className="heatmap-svg"
+            width={width}
+            height={height}
             viewBox={`0 0 ${width} ${height}`}
-            preserveAspectRatio="xMinYMid meet"
             role="img"
             aria-label={`Heatmap of product-family releases per ${unit}, 10 families by ${cols} ${unit}s. Busiest cell: ${peak.value} releases.`}
           >
-            {/* Year dividers + year captions */}
             {model.columns.map((col) =>
               col.isYearStart ? (
                 <g key={`year-${col.key}`}>
-                  <line
-                    className="heat-year-rule"
-                    x1={LG + col.index * STEP - 1}
-                    y1={HEADER - 16}
-                    x2={LG + col.index * STEP - 1}
-                    y2={HEADER + rowsH}
-                  />
-                  <text className="heat-year" x={LG + col.index * STEP + 2} y={14}>{col.year}</text>
+                  <line className="heat-year-rule" x1={LG + col.index * step - 1} y1={HEADER - 16} x2={LG + col.index * step - 1} y2={HEADER + rowsH} />
+                  <text className="heat-year" x={LG + col.index * step + 2} y={14}>{col.year}</text>
                 </g>
               ) : null,
             )}
 
-            {/* Column ticks */}
             {model.columns.map((col) => {
               const tick = granularity === "quarter"
                 ? col.key.slice(col.key.indexOf("-") + 1)
                 : (col.index % 3 === 0 ? col.shortLabel.split(" ")[0] : "");
               return tick ? (
-                <text key={`tick-${col.key}`} className="heat-tick" x={LG + col.index * STEP + CELL / 2} y={HEADER - 6} textAnchor="middle">
-                  {tick}
-                </text>
+                <text key={`tick-${col.key}`} className="heat-tick" x={LG + col.index * step + cellSize / 2} y={HEADER - 6} textAnchor="middle">{tick}</text>
               ) : null;
             })}
 
-            {/* Rows */}
             {model.rows.map((row, r) => {
               const dim = mutedFamilies.has(row.familyId);
               const lit = hoveredFamily === row.familyId;
-              const y = HEADER + r * STEP;
+              const y = HEADER + r * step;
               return (
                 <g key={row.familyId} className={`heat-row${dim ? " dim" : ""}${lit ? " lit" : ""}`}>
-                  <rect
-                    className="heat-rowlabel-hit"
-                    x={0}
-                    y={y}
-                    width={LG - 6}
-                    height={CELL}
-                    onPointerEnter={() => setHoveredFamily(row.familyId)}
-                    onPointerLeave={() => setHoveredFamily(null)}
-                  />
-                  <rect className="heat-swatch" x={8} y={y + CELL / 2 - 4} width={8} height={8} style={{ fill: row.color }} />
-                  <text className="heat-glyph" x={22} y={y + CELL / 2 + 4}>{row.glyph}</text>
-                  <text className="heat-name" x={36} y={y + CELL / 2 + 4}>{row.name}</text>
-                  <text className="heat-rowtotal" x={LG - 10} y={y + CELL / 2 + 4} textAnchor="end">{row.rowTotal}</text>
+                  <rect className="heat-rowlabel-hit" x={0} y={y} width={LG - 6} height={cellSize}
+                    onPointerEnter={() => setHoveredFamily(row.familyId)} onPointerLeave={() => setHoveredFamily(null)} />
+                  <rect className="heat-swatch" x={8} y={y + cellSize / 2 - 4} width={8} height={8} style={{ fill: row.color }} />
+                  <text className="heat-glyph" x={22} y={y + cellSize / 2 + 4}>{row.glyph}</text>
+                  <text className="heat-name" x={36} y={y + cellSize / 2 + 4}>{row.name}</text>
+                  <text className="heat-rowtotal" x={LG - 10} y={y + cellSize / 2 + 4} textAnchor="end">{row.rowTotal}</text>
                   {row.cells.map((cell) => {
-                    const x = LG + cell.colIndex * STEP;
+                    const x = LG + cell.colIndex * step;
                     const isPeak = peak.row === r && peak.col === cell.colIndex;
                     return (
                       <g key={cell.colIndex}>
                         <rect
                           className={`heat-cell${cell.value === 0 ? " empty" : ""}${isPeak ? " peak" : ""}`}
-                          x={x}
-                          y={y}
-                          width={CELL}
-                          height={CELL}
-                          rx={2}
+                          x={x} y={y} width={cellSize} height={cellSize} rx={2}
                           style={{ fill: cellFill(cell.value, model.maxCell) }}
                           onPointerEnter={(event) => {
                             const rect = wrapRef.current?.getBoundingClientRect();
@@ -161,16 +142,8 @@ export function FamilyHeatmap({ dataset }: { dataset: ExplorerDataset }) {
                             });
                           }}
                         />
-                        {cell.value >= 3 && (
-                          <text
-                            className="heat-value"
-                            x={x + CELL / 2}
-                            y={y + CELL / 2 + 4}
-                            textAnchor="middle"
-                            style={{ fill: cell.intensity01 >= 0.62 ? "var(--bg)" : "var(--text)" }}
-                          >
-                            {cell.value}
-                          </text>
+                        {cell.value >= 3 && cellSize >= 28 && (
+                          <text className="heat-value" x={x + cellSize / 2} y={y + cellSize / 2 + 4} textAnchor="middle">{cell.value}</text>
                         )}
                       </g>
                     );
@@ -187,11 +160,8 @@ export function FamilyHeatmap({ dataset }: { dataset: ExplorerDataset }) {
         <span className="heat-legend-label">Fewer</span>
         <span className="heat-legend-swatch empty" />
         {legendStops.map((stop) => (
-          <span
-            key={stop}
-            className="heat-legend-swatch"
-            style={{ background: `color-mix(in srgb, var(--accent-text) ${heatIntensityPct(stop * model.maxCell, model.maxCell)}%, var(--surface))` }}
-          />
+          <span key={stop} className="heat-legend-swatch"
+            style={{ background: `color-mix(in srgb, var(--accent-text) ${heatIntensityPct(stop * model.maxCell, model.maxCell)}%, var(--surface))` }} />
         ))}
         <span className="heat-legend-label">More · up to {model.maxCell}</span>
       </div>

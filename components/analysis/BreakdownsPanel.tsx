@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { ExplorerDataset } from "../../lib/timeline/schema";
 import {
@@ -18,6 +18,7 @@ const WARN_KEYS = new Set(["deprecation", "retirement", "deprecated", "retired"]
 
 function useCountUp(target: number, reducedMotion: boolean): [React.RefObject<HTMLDivElement | null>, number] {
   const [display, setDisplay] = useState(0);
+  const frameRef = useRef<number | null>(null);
   const ref = useInViewOnce<HTMLDivElement>(() => {
     if (reducedMotion) { setDisplay(target); return; }
     const start = performance.now();
@@ -26,10 +27,11 @@ function useCountUp(target: number, reducedMotion: boolean): [React.RefObject<HT
       const progress = Math.min(1, (now - start) / duration);
       const eased = 1 - (1 - progress) ** 3;
       setDisplay(Math.round(target * eased));
-      if (progress < 1) requestAnimationFrame(tick);
+      if (progress < 1) frameRef.current = requestAnimationFrame(tick);
     };
-    requestAnimationFrame(tick);
+    frameRef.current = requestAnimationFrame(tick);
   }, reducedMotion);
+  useEffect(() => () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); }, []);
   return [ref, display];
 }
 
@@ -102,10 +104,10 @@ export function KpiBand({ dataset }: { dataset: ExplorerDataset }) {
 function BarGroup({ title, bars, ordinal }: { title: string; bars: BreakdownBar[]; ordinal?: boolean }) {
   const max = Math.max(1, ...bars.map((bar) => bar.count));
   const rowH = 30;
-  const width = 360;
+  const width = 400;
   const height = bars.length * rowH + 6;
   const x0 = 118;
-  const trackW = 182;
+  const trackW = 200;
 
   return (
     <div className="bar-group">
