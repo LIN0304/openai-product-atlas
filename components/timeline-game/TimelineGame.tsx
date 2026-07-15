@@ -14,6 +14,7 @@ import {
 } from "../../lib/timeline/view-state";
 import { EventDialog } from "./EventDialog";
 import { EventIndex } from "./EventIndex";
+import { AnalysisDashboard } from "../analysis/AnalysisDashboard";
 import { EventInspector } from "./EventInspector";
 import { FilterPanel } from "./FilterPanel";
 import { GameStage, type GameStageHandle } from "./GameStage";
@@ -60,6 +61,11 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
   const stageRef = useRef<GameStageHandle>(null);
   const filterReturnTargetRef = useRef<HTMLElement | null>(null);
   const dialogReturnTargetRef = useRef<HTMLElement | null>(null);
+  const shellRef = useRef<HTMLElement>(null);
+  const immersiveReturnRef = useRef<HTMLElement | null>(null);
+  const immersiveTransitioningRef = useRef(false);
+  const immersiveResetTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const immersiveMountedRef = useRef(false);
   const validIds = useMemo(() => new Set(initialData.events.map((event) => event.event_id)), [initialData.events]);
   const eventById = useMemo(() => new Map(initialData.events.map((event) => [event.event_id, event])), [initialData.events]);
   const familyById = useMemo(() => new Map(initialData.taxonomy.map((family) => [family.id, family])), [initialData.taxonomy]);
@@ -71,7 +77,7 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
   const [year, setYear] = useState(initialView.year);
   const [landmarksOnly, setLandmarksOnly] = useState(initialView.landmarksOnly);
   const [selectedId, setSelectedId] = useState(initialView.selectedId);
-  const [view, setView] = useState<"map" | "index">(initialView.view);
+  const [view, setView] = useState<"map" | "index" | "analysis">(initialView.view);
   const [visitedIds, setVisitedIds] = useState<Set<string>>(() => new Set());
   const [visitedLoaded, setVisitedLoaded] = useState(false);
   const [dialogEvents, setDialogEvents] = useState<readonly ExplorerEvent[]>([]);
@@ -85,6 +91,8 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
   const [theme, setTheme] = useState<GameTheme>("openai");
   const [reducedMotion, setReducedMotion] = useState<boolean | undefined>(undefined);
   const [copied, setCopied] = useState(false);
+  const [immersive, setImmersive] = useState(false);
+  const [fallbackImmersive, setFallbackImmersive] = useState(false);
   const [pendingRoute, setPendingRoute] = useState<{ eventId: string; focus: boolean } | null>(
     initialView.view === "map" && initialRouteId
       ? { eventId: initialRouteId, focus: false }
@@ -183,6 +191,149 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
       : "Switched to OpenAI theme.");
   }, []);
 
+  // Full-screen / immersive map. Native Fullscreen API is the primary path;
+  // a fixed-overlay CSS fallback covers engines without element fullscreen
+  // (notably iOS Safari). The `immersive` flag is reconciled from the browser
+  // via fullscreenchange so ESC, the browser chrome, and OS gestures cannot
+  // desync the toggle.
+  const clearImmersiveTransition = useCallback(() => {
+    immersiveTransitioningRef.current = false;
+    if (immersiveResetTimerRef.current !== undefined) {
+      clearTimeout(immersiveResetTimerRef.current);
+      immersiveResetTimerRef.current = undefined;
+    }
+  }, []);
+
+  // Mark a transition in flight, but always arm a timeout backstop: a browser
+  // that resolves (or silently no-ops) a request without dispatching
+  // fullscreenchange/fullscreenerror must never latch the guard forever.
+  const beginImmersiveTransition = useCallback(() => {
+    immersiveTransitioningRef.current = true;
+    if (immersiveResetTimerRef.current !== undefined) clearTimeout(immersiveResetTimerRef.current);
+    immersiveResetTimerRef.current = setTimeout(() => {
+      immersiveTransitioningRef.current = false;
+      immersiveResetTimerRef.current = undefined;
+    }, 1200);
+  }, []);
+
+  const enterFallbackImmersive = useCallback(() => {
+    clearImmersiveTransition();
+    document.body.style.overflow = "hidden";
+    setFallbackImmersive(true);
+    setImmersive(true);
+  }, [clearImmersiveTransition]);
+
+  const enterImmersive = useCallback(() => {
+    const shell = shellRef.current as (HTMLElement & { webkitRequestFullscreen?: () => Promise<void> | void }) | null;
+    if (!shell || immersiveTransitioningRef.current || immersive) return;
+    immersiveReturnRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const webkitRequest = shell.webkitRequestFullscreen;
+    const request = typeof shell.requestFullscreen === "function"
+      ? () => shell.requestFullscreen()
+      : typeof webkitRequest === "function"
+        ? () => webkitRequest.call(shell)
+        : null;
+    if (!request) {
+      enterFallbackImmersive();
+      return;
+    }
+    beginImmersiveTransition();
+    let result: unknown;
+    try {
+      result = request();
+    } catch {
+      enterFallbackImmersive();
+      return;
+    }
+    // A rejected request (e.g. iPhone Safari reports the method but refuses a
+    // non-video element) degrades to the in-page fallback. On success the
+    // fullscreenchange listener flips the state and clears the guard.
+    if (result && typeof (result as Promise<void>).then === "function") {
+      (result as Promise<void>).then(undefined, () => enterFallbackImmersive());
+    }
+  }, [immersive, enterFallbackImmersive, beginImmersiveTransition]);
+
+  const exitImmersive = useCallback(() => {
+    if (immersiveTransitioningRef.current) return;
+    const doc = document as Document & { webkitFullscreenElement?: Element | null; webkitExitFullscreen?: () => Promise<void> | void };
+    const fsElement = document.fullscreenElement ?? doc.webkitFullscreenElement ?? null;
+    if (fsElement) {
+      beginImmersiveTransition();
+      let result: unknown;
+      try {
+        result = typeof document.exitFullscreen === "function" ? document.exitFullscreen() : doc.webkitExitFullscreen?.();
+      } catch {
+        clearImmersiveTransition();
+        return;
+      }
+      if (result && typeof (result as Promise<void>).then === "function") {
+        (result as Promise<void>).then(undefined, () => clearImmersiveTransition());
+      }
+    } else {
+      setFallbackImmersive(false);
+      setImmersive(false);
+    }
+  }, [beginImmersiveTransition, clearImmersiveTransition]);
+
+  const toggleImmersive = useCallback(() => {
+    if (immersive) exitImmersive();
+    else enterImmersive();
+  }, [immersive, enterImmersive, exitImmersive]);
+
+  useEffect(() => {
+    const doc = document as Document & { webkitFullscreenElement?: Element | null };
+    const sync = () => {
+      clearImmersiveTransition();
+      if (fallbackImmersive) return;
+      const active = !!shellRef.current && (document.fullscreenElement ?? doc.webkitFullscreenElement ?? null) === shellRef.current;
+      setImmersive(active);
+    };
+    // A failed request fires fullscreenerror, not ...change, so clear the guard
+    // there too rather than waiting for the timeout backstop.
+    document.addEventListener("fullscreenchange", sync);
+    document.addEventListener("webkitfullscreenchange", sync);
+    document.addEventListener("fullscreenerror", clearImmersiveTransition);
+    document.addEventListener("webkitfullscreenerror", clearImmersiveTransition);
+    return () => {
+      document.removeEventListener("fullscreenchange", sync);
+      document.removeEventListener("webkitfullscreenchange", sync);
+      document.removeEventListener("fullscreenerror", clearImmersiveTransition);
+      document.removeEventListener("webkitfullscreenerror", clearImmersiveTransition);
+    };
+  }, [fallbackImmersive, clearImmersiveTransition]);
+
+  // Guarantee the fallback body scroll-lock and the transition timer are
+  // released even if the component unmounts (e.g. a client route change) while
+  // still in immersive mode — the [immersive] effect below only restores them
+  // when immersive flips false, which never runs on unmount.
+  useEffect(() => () => {
+    document.body.style.overflow = "";
+    if (immersiveResetTimerRef.current !== undefined) clearTimeout(immersiveResetTimerRef.current);
+  }, []);
+
+  useEffect(() => {
+    // Skip the initial mount so a fresh page load stays silent.
+    if (!immersiveMountedRef.current) {
+      immersiveMountedRef.current = true;
+      return;
+    }
+    if (immersive) {
+      window.requestAnimationFrame(() => {
+        setAnnouncement("Entered full screen. Press F or Escape to exit.");
+        stageRef.current?.focus();
+      });
+    } else {
+      document.body.style.overflow = "";
+      const target = immersiveReturnRef.current;
+      immersiveReturnRef.current = null;
+      window.requestAnimationFrame(() => {
+        setAnnouncement("Exited full screen.");
+        if (target?.isConnected) target.focus();
+        else stageRef.current?.focus();
+      });
+    }
+  }, [immersive]);
+
   useEffect(() => {
     const handlePopState = () => {
       const parsed = parseTimelineViewState(window.location.search, initialData);
@@ -196,7 +347,11 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
       setDialogOpen(false);
       setDialogEvents([]);
       setFiltersOpen(false);
-      setStatus(next.view === "index" ? "Index online · history restored" : "NOVA online · history restored");
+      setStatus(next.view === "index"
+        ? "Index online · history restored"
+        : next.view === "analysis"
+          ? "Analysis online · history restored"
+          : "NOVA online · history restored");
       const routeEventId = timelineRouteEventFromHistory(window.history.state, parsed.selectedId, validIds);
       setPendingRoute(next.view === "map" && routeEventId
         ? { eventId: routeEventId, focus: false }
@@ -204,7 +359,7 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
       window.setTimeout(() => {
         const target = next.view === "index" && next.selectedId
           ? document.getElementById(`event-${next.selectedId}`)
-          : document.getElementById(next.view === "index" ? "event-index" : "world");
+          : document.getElementById(next.view === "index" ? "event-index" : next.view === "analysis" ? "analysis" : "world");
         target?.scrollIntoView();
       }, 0);
     };
@@ -224,6 +379,23 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
         });
         return;
       }
+      if (event.key === "Escape" && immersive) {
+        // Native fullscreen consumes ESC itself (the browser exits and fires
+        // fullscreenchange); only the CSS-only fallback needs a manual exit.
+        const doc = document as Document & { webkitFullscreenElement?: Element | null };
+        if (!document.fullscreenElement && !doc.webkitFullscreenElement) {
+          event.preventDefault();
+          exitImmersive();
+        }
+        return;
+      }
+      if ((event.key === "f" || event.key === "F") && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        const fsTarget = event.target as HTMLElement | null;
+        if (fsTarget?.matches("input, textarea, select, [contenteditable='true']")) return;
+        event.preventDefault();
+        toggleImmersive();
+        return;
+      }
       if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey) return;
       const target = event.target as HTMLElement | null;
       if (target?.matches("input, textarea, select, [contenteditable='true']")) return;
@@ -236,14 +408,16 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
     };
     window.addEventListener("keydown", handleGlobalKey);
     return () => window.removeEventListener("keydown", handleGlobalKey);
-  }, [dialogOpen, filtersOpen]);
+  }, [dialogOpen, filtersOpen, immersive, exitImmersive, toggleImmersive]);
 
   useEffect(() => {
-    if (initialView.view !== "index") return;
+    if (initialView.view === "map") return;
     const frame = window.requestAnimationFrame(() => {
-      const target = initialView.selectedId
-        ? document.getElementById(`event-${initialView.selectedId}`)
-        : document.getElementById("event-index");
+      const target = initialView.view === "analysis"
+        ? document.getElementById("analysis")
+        : initialView.selectedId
+          ? document.getElementById(`event-${initialView.selectedId}`)
+          : document.getElementById("event-index");
       target?.scrollIntoView();
     });
     return () => window.cancelAnimationFrame(frame);
@@ -396,12 +570,13 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
     setFiltersOpen(true);
   }, []);
 
-  const navigateView = useCallback((nextView: "map" | "index") => {
+  const navigateView = useCallback((nextView: "map" | "index" | "analysis") => {
     setView(nextView);
-    writeUrl("push", { view: nextView }, nextView === "index" ? "#event-index" : "#world");
+    const hash = nextView === "index" ? "#event-index" : nextView === "analysis" ? "#analysis" : "#world";
+    writeUrl("push", { view: nextView }, hash);
     const target = nextView === "index" && selectedEvent
       ? document.getElementById(`event-${selectedEvent.event_id}`)
-      : document.getElementById(nextView === "index" ? "event-index" : "world");
+      : document.getElementById(nextView === "index" ? "event-index" : nextView === "analysis" ? "analysis" : "world");
     target?.scrollIntoView();
   }, [selectedEvent, writeUrl]);
 
@@ -411,7 +586,10 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
   const stats = initialData.stats;
 
   return (
-    <main className="atlas-shell">
+    <main
+      ref={shellRef}
+      className={`atlas-shell${immersive ? " is-fullscreen" : ""}${fallbackImmersive ? " is-fullscreen--fallback" : ""}`}
+    >
       <a className="skip-link" href="#event-index">Skip to event index</a>
 
       <header className="site-header">
@@ -423,6 +601,7 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
         <nav aria-label="Primary navigation">
           <a className={view === "map" ? "active" : ""} aria-current={view === "map" ? "page" : undefined} href="#world" onClick={(event) => { event.preventDefault(); navigateView("map"); }}>Explore</a>
           <a className={view === "index" ? "active" : ""} aria-current={view === "index" ? "page" : undefined} href="#event-index" onClick={(event) => { event.preventDefault(); navigateView("index"); }}>Event index</a>
+          <a className={view === "analysis" ? "active" : ""} aria-current={view === "analysis" ? "page" : undefined} href="#analysis" onClick={(event) => { event.preventDefault(); navigateView("analysis"); }}>Analysis</a>
           <a href="#methodology">Methodology</a>
           <a href="#downloads">Downloads</a>
         </nav>
@@ -461,6 +640,7 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
             <button type="button" onClick={() => stageRef.current?.zoomBy(0.82)} aria-label="Zoom out">−</button>
             <button type="button" onClick={() => stageRef.current?.zoomBy(1.22)} aria-label="Zoom in">+</button>
             <button type="button" onClick={() => stageRef.current?.fit()}>Fit</button>
+            <button type="button" className="toolbar-fs" aria-pressed={immersive} onClick={toggleImmersive}>{immersive ? "Exit full screen" : "Full screen"}</button>
           </div>
         </div>
 
@@ -533,6 +713,16 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
               onMap={() => stageRef.current?.fit()}
             />
 
+            <button
+              type="button"
+              className="fs-toggle"
+              aria-pressed={immersive}
+              aria-label={immersive ? "Exit full screen" : "Enter full screen"}
+              onClick={toggleImmersive}
+            >
+              <span aria-hidden="true">{immersive ? "⤡" : "⤢"}</span>
+            </button>
+
             <div className="map-status-strip">
               <span>Landmark · Major · Update</span>
               <span>WASD / arrows to move · Enter to read · click to route</span>
@@ -570,6 +760,9 @@ export function TimelineGame({ initialData, initialView, initialRouteId }: Timel
       </section>
 
       <EventIndex events={filteredEvents} families={initialData.taxonomy} selectedEventId={selectedEvent?.event_id ?? ""} onRoute={routeTo} onOpen={openRecord} />
+
+      <AnalysisDashboard dataset={initialData} onOpenEvent={(eventId) => { const event = eventById.get(eventId); if (event) routeTo(event); }} />
+
 
       <section className="method-section" id="methodology" aria-labelledby="method-title">
         <div className="section-title-row">

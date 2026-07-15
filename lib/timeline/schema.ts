@@ -1,6 +1,6 @@
 export type NodeTier = "landmark" | "major" | "update";
 
-export type TimelineViewMode = "map" | "index";
+export type TimelineViewMode = "map" | "index" | "analysis";
 
 export interface ExplorerSourceRef {
   readonly id: string;
